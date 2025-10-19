@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,24 +10,24 @@ import {
   Image,
   SafeAreaView,
   Alert,
-} from 'react-native';
-import { router } from 'expo-router';
-import { Input } from '@/components/ui/Input';
-import { GradientButton } from '@/components/ui/GradientButton';
-import { IconSymbol } from '@/components/IconSymbol';
-import { realEstateColors, spacing } from '@/constants/RealEstateColors';
-import { authAPI } from '@/utils/api';
-import { useUser } from '@/contexts/UserContext';
+} from "react-native";
+import { router } from "expo-router";
+import { Input } from "@/components/ui/Input";
+import { GradientButton } from "@/components/ui/GradientButton";
+import { IconSymbol } from "@/components/IconSymbol";
+import { realEstateColors, spacing } from "@/constants/RealEstateColors";
+import { authAPI } from "@/utils/api";
+import { useUser } from "@/contexts/UserContext";
 
 export default function SignupScreen() {
   const { setUser } = useUser();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'buyer', // Added role field with default value
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "buyer", // Added role field with default value
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -37,28 +37,36 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     // Basic validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.password
+    ) {
+      Alert.alert("Error", "Please fill in all required fields");
       return;
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
-    
+
     if (formData.password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      Alert.alert("Error", "Password must be at least 6 characters");
       return;
     }
-    
+
     if (!agreeToTerms) {
-      Alert.alert('Error', 'Please agree to the Terms of Service and Privacy Policy');
+      Alert.alert(
+        "Error",
+        "Please agree to the Terms of Service and Privacy Policy"
+      );
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // First register the user
       const registerResponse = await authAPI.register({
@@ -66,47 +74,48 @@ export default function SignupScreen() {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
-        role: formData.role
+        role: formData.role,
       });
-      
-      console.log('Registration successful:', registerResponse);
-      
+
+      console.log("Registration successful:", registerResponse);
+
       // Show success message
       Alert.alert(
-        'Success', 
-        'Account created successfully! Please login with your credentials.',
-        [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }]
+        "Success",
+        "Account created successfully! Please login with your credentials.",
+        [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
       );
     } catch (error: any) {
-      console.error('Signup error:', error);
-      let errorMessage = 'An unexpected error occurred';
-      
+      console.error("Signup error:", error);
+      let errorMessage = "An unexpected error occurred";
+
       if (error.message) {
         errorMessage = error.message;
-      } else if (typeof error === 'string') {
+      } else if (typeof error === "string") {
         errorMessage = error;
       }
-      
-      Alert.alert('Signup Failed', errorMessage);
+
+      Alert.alert("Signup Failed", errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const updateFormData = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   // Role options
   const roleOptions = [
-    { label: 'Buyer', value: 'buyer' },
-    { label: 'Agent', value: 'agent' },
+    { label: "Buyer", value: "buyer" },
+    { label: "Agent", value: "agent" },
+    { label: "Seller", value: "seller" },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image 
-        source={require('@/assets/images/estate.png')} 
+      <Image
+        source={require("@/assets/images/estate.png")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -114,7 +123,7 @@ export default function SignupScreen() {
       <View style={styles.darkOverlay} />
       <View style={styles.overlay}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
         >
           <ScrollView
@@ -133,7 +142,7 @@ export default function SignupScreen() {
                 <Input
                   label="First Name"
                   value={formData.firstName}
-                  onChangeText={(value) => updateFormData('firstName', value)}
+                  onChangeText={(value) => updateFormData("firstName", value)}
                   placeholder="First name"
                   containerStyle={styles.nameInput}
                   inputStyle={styles.input}
@@ -141,7 +150,7 @@ export default function SignupScreen() {
                 <Input
                   label="Last Name"
                   value={formData.lastName}
-                  onChangeText={(value) => updateFormData('lastName', value)}
+                  onChangeText={(value) => updateFormData("lastName", value)}
                   placeholder="Last name"
                   containerStyle={styles.nameInput}
                   inputStyle={styles.input}
@@ -151,20 +160,24 @@ export default function SignupScreen() {
               {/* Role Selection */}
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Role</Text>
-                <Pressable 
+                <Pressable
                   style={styles.roleSelector}
                   onPress={() => setIsRoleSelectorOpen(!isRoleSelectorOpen)}
                 >
                   <Text style={styles.roleText}>
-                    {roleOptions.find(option => option.value === formData.role)?.label}
+                    {
+                      roleOptions.find(
+                        (option) => option.value === formData.role
+                      )?.label
+                    }
                   </Text>
                   <IconSymbol
-                    name={isRoleSelectorOpen ? 'chevron.up' : 'chevron.down'}
+                    name={isRoleSelectorOpen ? "chevron.up" : "chevron.down"}
                     size={20}
                     color={realEstateColors.gray[300]}
                   />
                 </Pressable>
-                
+
                 {isRoleSelectorOpen && (
                   <View style={styles.roleOptions}>
                     {roleOptions.map((option) => (
@@ -172,14 +185,17 @@ export default function SignupScreen() {
                         key={option.value}
                         style={styles.roleOption}
                         onPress={() => {
-                          updateFormData('role', option.value);
+                          updateFormData("role", option.value);
                           setIsRoleSelectorOpen(false);
                         }}
                       >
-                        <Text style={[
-                          styles.roleOptionText,
-                          formData.role === option.value && styles.selectedRoleOptionText
-                        ]}>
+                        <Text
+                          style={[
+                            styles.roleOptionText,
+                            formData.role === option.value &&
+                              styles.selectedRoleOptionText,
+                          ]}
+                        >
                           {option.label}
                         </Text>
                       </Pressable>
@@ -191,7 +207,7 @@ export default function SignupScreen() {
               <Input
                 label="Email"
                 value={formData.email}
-                onChangeText={(value) => updateFormData('email', value)}
+                onChangeText={(value) => updateFormData("email", value)}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -208,7 +224,7 @@ export default function SignupScreen() {
               <Input
                 label="Password"
                 value={formData.password}
-                onChangeText={(value) => updateFormData('password', value)}
+                onChangeText={(value) => updateFormData("password", value)}
                 placeholder="Create a password"
                 secureTextEntry={!showPassword}
                 leftIcon={
@@ -221,7 +237,7 @@ export default function SignupScreen() {
                 rightIcon={
                   <Pressable onPress={() => setShowPassword(!showPassword)}>
                     <IconSymbol
-                      name={showPassword ? 'eye.slash' : 'eye'}
+                      name={showPassword ? "eye.slash" : "eye"}
                       size={20}
                       color={realEstateColors.gray[300]}
                     />
@@ -233,7 +249,9 @@ export default function SignupScreen() {
               <Input
                 label="Confirm Password"
                 value={formData.confirmPassword}
-                onChangeText={(value) => updateFormData('confirmPassword', value)}
+                onChangeText={(value) =>
+                  updateFormData("confirmPassword", value)
+                }
                 placeholder="Confirm your password"
                 secureTextEntry={!showConfirmPassword}
                 leftIcon={
@@ -244,9 +262,11 @@ export default function SignupScreen() {
                   />
                 }
                 rightIcon={
-                  <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <Pressable
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
                     <IconSymbol
-                      name={showConfirmPassword ? 'eye.slash' : 'eye'}
+                      name={showConfirmPassword ? "eye.slash" : "eye"}
                       size={20}
                       color={realEstateColors.gray[300]}
                     />
@@ -259,7 +279,12 @@ export default function SignupScreen() {
                 onPress={() => setAgreeToTerms(!agreeToTerms)}
                 style={styles.termsContainer}
               >
-                <View style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}>
+                <View
+                  style={[
+                    styles.checkbox,
+                    agreeToTerms && styles.checkboxChecked,
+                  ]}
+                >
                   {agreeToTerms && (
                     <IconSymbol
                       name="checkmark"
@@ -269,9 +294,8 @@ export default function SignupScreen() {
                   )}
                 </View>
                 <Text style={styles.termsText}>
-                  I agree to the{' '}
-                  <Text style={styles.termsLink}>Terms of Service</Text>
-                  {' '}and{' '}
+                  I agree to the{" "}
+                  <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
                   <Text style={styles.termsLink}>Privacy Policy</Text>
                 </Text>
               </Pressable>
@@ -282,12 +306,12 @@ export default function SignupScreen() {
                 loading={loading}
                 style={styles.signupButton}
               />
-              
+
               {/* Sign in option */}
               <View style={styles.footer}>
                 <Text style={styles.footerText}>
-                  Already have an account?{' '}
-                  <Pressable onPress={() => router.push('/(auth)/login')}>
+                  Already have an account?{" "}
+                  <Pressable onPress={() => router.push("/(auth)/login")}>
                     <Text style={styles.footerLink}>Sign In</Text>
                   </Pressable>
                 </Text>
@@ -306,22 +330,22 @@ const styles = StyleSheet.create({
     backgroundColor: realEstateColors.white,
   },
   backgroundImage: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     bottom: 0,
     right: 0,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   // Enhanced dark overlay with 50% opacity
   darkOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     bottom: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   overlay: {
     flex: 1,
@@ -332,30 +356,30 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingVertical: spacing.xl, // Added more vertical padding
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: spacing.xl,
     marginBottom: spacing.lg, // Reduced margin
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.white,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: 16,
     color: realEstateColors.gray[300], // Lighter subtitle color
-    textAlign: 'center',
+    textAlign: "center",
   },
   form: {
     flex: 1,
   },
   nameRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   nameInput: {
@@ -370,18 +394,18 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: realEstateColors.white,
     marginBottom: spacing.xs,
   },
   roleSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: "rgba(255, 255, 255, 0.3)",
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     minHeight: 56,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -391,16 +415,16 @@ const styles = StyleSheet.create({
     color: realEstateColors.white,
   },
   roleOptions: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 12,
     marginTop: spacing.xs,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   roleOption: {
     padding: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    borderBottomColor: "rgba(255, 255, 255, 0.2)",
   },
   roleOptionText: {
     fontSize: 16,
@@ -408,11 +432,11 @@ const styles = StyleSheet.create({
   },
   selectedRoleOptionText: {
     color: realEstateColors.white,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   termsContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: spacing.lg,
     gap: spacing.sm,
   },
@@ -422,8 +446,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: realEstateColors.gray[300],
     borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 2,
   },
   checkboxChecked: {
@@ -438,13 +462,13 @@ const styles = StyleSheet.create({
   },
   termsLink: {
     color: realEstateColors.white, // White links
-    fontWeight: '500',
+    fontWeight: "500",
   },
   signupButton: {
     marginBottom: spacing.lg,
   },
   footer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.lg,
     marginTop: spacing.md,
   },
@@ -454,6 +478,6 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     color: realEstateColors.white,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

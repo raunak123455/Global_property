@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,36 +10,36 @@ import {
   Image,
   SafeAreaView,
   Alert,
-} from 'react-native';
-import { router } from 'expo-router';
-import { Input } from '@/components/ui/Input';
-import { GradientButton } from '@/components/ui/GradientButton';
-import { SocialButton } from '@/components/ui/SocialButton';
-import { IconSymbol } from '@/components/IconSymbol';
-import { realEstateColors, spacing } from '@/constants/RealEstateColors';
-import { authAPI } from '@/utils/api';
-import { useUser } from '@/contexts/UserContext';
+} from "react-native";
+import { router } from "expo-router";
+import { Input } from "@/components/ui/Input";
+import { GradientButton } from "@/components/ui/GradientButton";
+import { SocialButton } from "@/components/ui/SocialButton";
+import { IconSymbol } from "@/components/IconSymbol";
+import { realEstateColors, spacing } from "@/constants/RealEstateColors";
+import { authAPI } from "@/utils/api";
+import { useUser } from "@/contexts/UserContext";
 
 export default function LoginScreen() {
   const { setUser } = useUser();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     // Basic validation
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const response = await authAPI.login({ email, password });
-      console.log('Login successful:', response);
-      
+      console.log("Login successful:", response);
+
       // Save user data to context
       setUser({
         _id: response._id,
@@ -47,39 +47,45 @@ export default function LoginScreen() {
         lastName: response.lastName,
         email: response.email,
         role: response.role,
-        token: response.token
+        token: response.token,
       });
-      
-      // Navigate to the dashboard
-      router.replace('/(tabs)/dashboard');
+
+      // Navigate based on user role
+      if (response.role === "seller") {
+        console.log("Navigating to seller dashboard...");
+        router.replace("/(seller-tabs)/seller-dashboard");
+      } else {
+        console.log("Navigating to buyer dashboard...");
+        router.replace("/(tabs)/dashboard");
+      }
     } catch (error: any) {
-      console.error('Login error:', error);
-      let errorMessage = 'An unexpected error occurred';
-      
+      console.error("Login error:", error);
+      let errorMessage = "An unexpected error occurred";
+
       if (error.message) {
         errorMessage = error.message;
-      } else if (typeof error === 'string') {
+      } else if (typeof error === "string") {
         errorMessage = error;
       }
-      
-      Alert.alert('Login Failed', errorMessage);
+
+      Alert.alert("Login Failed", errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    console.log('Google login pressed');
+    console.log("Google login pressed");
   };
 
   const handleAppleLogin = () => {
-    console.log('Apple login pressed');
+    console.log("Apple login pressed");
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image 
-        source={require('@/assets/images/estate.png')} 
+      <Image
+        source={require("@/assets/images/estate.png")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -87,7 +93,7 @@ export default function LoginScreen() {
       <View style={styles.darkOverlay} />
       <View style={styles.overlay}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardView}
         >
           <ScrollView
@@ -135,7 +141,7 @@ export default function LoginScreen() {
                 rightIcon={
                   <Pressable onPress={() => setShowPassword(!showPassword)}>
                     <IconSymbol
-                      name={showPassword ? 'eye.slash' : 'eye'}
+                      name={showPassword ? "eye.slash" : "eye"}
                       size={20}
                       color={realEstateColors.gray[300]}
                     />
@@ -145,7 +151,7 @@ export default function LoginScreen() {
               />
 
               <Pressable
-                onPress={() => router.push('/(auth)/forgot-password')}
+                onPress={() => router.push("/(auth)/forgot-password")}
                 style={styles.forgotPassword}
               >
                 <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -192,12 +198,12 @@ export default function LoginScreen() {
                   }
                 />
               </View>
-              
+
               {/* Sign up option moved here */}
               <View style={styles.footer}>
                 <Text style={styles.footerText}>
-                  Don&apos;t have an account?{' '}
-                  <Pressable onPress={() => router.push('/(auth)/signup')}>
+                  Don&apos;t have an account?{" "}
+                  <Pressable onPress={() => router.push("/(auth)/signup")}>
                     <Text style={styles.footerLink}>Sign Up</Text>
                   </Pressable>
                 </Text>
@@ -216,22 +222,22 @@ const styles = StyleSheet.create({
     backgroundColor: realEstateColors.white,
   },
   backgroundImage: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     bottom: 0,
     right: 0,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   // Enhanced dark overlay with 50% opacity
   darkOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     bottom: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   overlay: {
     flex: 1,
@@ -242,24 +248,24 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingVertical: spacing.xl, // Added more vertical padding
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: spacing.xl,
     marginBottom: spacing.lg, // Reduced margin
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.white,
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontSize: 16,
     color: realEstateColors.gray[300], // Lighter subtitle color
-    textAlign: 'center',
+    textAlign: "center",
   },
   form: {
     flex: 1,
@@ -268,20 +274,20 @@ const styles = StyleSheet.create({
     color: realEstateColors.white,
   },
   forgotPassword: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginBottom: spacing.md, // Reduced space before button
   },
   forgotPasswordText: {
     fontSize: 14,
     color: realEstateColors.white,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   loginButton: {
     marginBottom: spacing.lg,
   },
   divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: spacing.lg,
   },
   dividerLine: {
@@ -295,14 +301,14 @@ const styles = StyleSheet.create({
     color: realEstateColors.gray[300],
   },
   socialButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   socialButton: {
     flex: 1,
   },
   footer: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.lg,
     marginTop: spacing.md,
   },
@@ -312,6 +318,6 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     color: realEstateColors.white,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
