@@ -110,6 +110,7 @@ export default function SignupScreen() {
     { label: "Buyer", value: "buyer" },
     { label: "Agent", value: "agent" },
     { label: "Seller", value: "seller" },
+    { label: "Notary", value: "notary" },
   ];
 
   return (

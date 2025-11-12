@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,17 +8,22 @@ import {
   Pressable,
   Dimensions,
   Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams, Link } from 'expo-router';
-import { CustomButton } from '@/components/ui/CustomButton';
-import { GradientButton } from '@/components/ui/GradientButton';
-import { Header } from '@/components/ui/Header';
-import { IconSymbol } from '@/components/IconSymbol';
-import { realEstateColors, spacing, borderRadius } from '@/constants/RealEstateColors';
-import { useUser } from '@/contexts/UserContext';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter, useLocalSearchParams, Link } from "expo-router";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { GradientButton } from "@/components/ui/GradientButton";
+import { Header } from "@/components/ui/Header";
+import { IconSymbol } from "@/components/IconSymbol";
+import {
+  realEstateColors,
+  spacing,
+  borderRadius,
+} from "@/constants/RealEstateColors";
+import { useUser } from "@/contexts/UserContext";
+import { KycWarningBanner } from "@/components/KycWarningBanner";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 interface Property {
   id: string;
@@ -36,27 +41,28 @@ interface Property {
 }
 
 const mockProperty: Property = {
-  id: '1',
-  title: 'Modern Villa',
-  price: '$850,000',
-  location: 'Beverly Hills, CA',
+  id: "1",
+  title: "Modern Villa",
+  price: "$850,000",
+  location: "Beverly Hills, CA",
   bedrooms: 4,
   bathrooms: 3,
-  area: '2,500 sq ft',
-  image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400',
+  area: "2,500 sq ft",
+  image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400",
   isFavorite: false,
-  type: 'Villa',
-  description: 'Beautiful modern villa located in the heart of Beverly Hills. This stunning property features 4 spacious bedrooms, 3 luxurious bathrooms, and a gorgeous open-concept living area with floor-to-ceiling windows that offer breathtaking views of the surrounding landscape.',
+  type: "Villa",
+  description:
+    "Beautiful modern villa located in the heart of Beverly Hills. This stunning property features 4 spacious bedrooms, 3 luxurious bathrooms, and a gorgeous open-concept living area with floor-to-ceiling windows that offer breathtaking views of the surrounding landscape.",
   features: [
-    'Swimming Pool',
-    'Garden',
-    'Garage',
-    'Fireplace',
-    'Balcony',
-    'Smart Home System',
-    'Gym',
-    'Security System'
-  ]
+    "Swimming Pool",
+    "Garden",
+    "Garage",
+    "Fireplace",
+    "Balcony",
+    "Smart Home System",
+    "Gym",
+    "Security System",
+  ],
 };
 
 export default function PropertyDetailsScreen() {
@@ -64,11 +70,8 @@ export default function PropertyDetailsScreen() {
   const params = useLocalSearchParams();
   const propertyId = params.id as string;
   const { user } = useUser();
-  
-  // State to track if user has completed KYC verification
-  // In a real app, this would come from the user context or API
-  const [isKycVerified, setIsKycVerified] = useState(false);
-  
+  const [showKycBanner, setShowKycBanner] = useState(false);
+
   // In a real app, you would fetch the property data based on the ID
   // For now, we'll use the mock data
   const property = mockProperty;
@@ -81,52 +84,73 @@ export default function PropertyDetailsScreen() {
         "Please log in to purchase properties.",
         [
           { text: "Cancel", style: "cancel" },
-          { text: "Log In", onPress: () => router.push("/(auth)/login") }
+          { text: "Log In", onPress: () => router.push("/(auth)/login") },
         ]
       );
       return;
     }
 
     // Check if user has completed KYC verification
-    if (!isKycVerified) {
-      // Show KYC verification modal
-      router.push("/kyc-modal");
+    if (!user.kycVerified) {
+      // Show KYC verification banner
+      setShowKycBanner(true);
       return;
     }
 
-    console.log('Buy button pressed for property:', propertyId);
-    // Implement buy functionality
+    // Navigate to mortgage calculator with property details
+    const priceNumber = parseFloat(property.price.replace(/[$,]/g, ""));
+    router.push({
+      pathname: "/mortgage-calculator",
+      params: {
+        price: priceNumber.toString(),
+        title: property.title,
+        location: property.location,
+        id: propertyId,
+      },
+    });
   };
 
   const handleEnquirePress = () => {
-    console.log('Enquire button pressed for property:', propertyId);
+    console.log("Enquire button pressed for property:", propertyId);
     // Implement enquire functionality
   };
 
   const toggleFavorite = () => {
-    console.log('Toggle favorite for property:', propertyId);
+    console.log("Toggle favorite for property:", propertyId);
     // Implement favorite toggle functionality
   };
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
-      <Header 
+    <SafeAreaView edges={["top"]} style={styles.container}>
+      {/* KYC Warning Banner - Shows when Buy Now is clicked without KYC */}
+      {showKycBanner && (
+        <KycWarningBanner onDismiss={() => setShowKycBanner(false)} />
+      )}
+
+      <Header
         showBackButton={true}
         rightComponent={
           <Pressable onPress={toggleFavorite} style={styles.headerButton}>
-            <IconSymbol 
-              name={property.isFavorite ? "heart.fill" : "heart"} 
-              size={24} 
-              color={property.isFavorite ? realEstateColors.error : realEstateColors.gray[900]} 
+            <IconSymbol
+              name={property.isFavorite ? "heart.fill" : "heart"}
+              size={24}
+              color={
+                property.isFavorite
+                  ? realEstateColors.error
+                  : realEstateColors.gray[900]
+              }
             />
           </Pressable>
         }
       />
-      
+
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Property Image */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: property.image }} style={styles.propertyImage} />
+          <Image
+            source={{ uri: property.image }}
+            style={styles.propertyImage}
+          />
           <View style={styles.imageOverlay}>
             <Text style={styles.propertyPrice}>{property.price}</Text>
           </View>
@@ -140,27 +164,43 @@ export default function PropertyDetailsScreen() {
               <Text style={styles.propertyType}>{property.type}</Text>
             </View>
           </View>
-          
+
           <View style={styles.propertyLocationContainer}>
-            <IconSymbol name="location" size={16} color={realEstateColors.gray[500]} />
+            <IconSymbol
+              name="location"
+              size={16}
+              color={realEstateColors.gray[500]}
+            />
             <Text style={styles.propertyLocation}>{property.location}</Text>
           </View>
-          
+
           <View style={styles.propertyDetails}>
             <View style={styles.detailItem}>
-              <IconSymbol name="bed.double" size={20} color={realEstateColors.gray[700]} />
+              <IconSymbol
+                name="bed.double"
+                size={20}
+                color={realEstateColors.gray[700]}
+              />
               <Text style={styles.detailValue}>{property.bedrooms}</Text>
               <Text style={styles.detailLabel}>Bedrooms</Text>
             </View>
-            
+
             <View style={styles.detailItem}>
-              <IconSymbol name="drop" size={20} color={realEstateColors.gray[700]} />
+              <IconSymbol
+                name="drop"
+                size={20}
+                color={realEstateColors.gray[700]}
+              />
               <Text style={styles.detailValue}>{property.bathrooms}</Text>
               <Text style={styles.detailLabel}>Bathrooms</Text>
             </View>
-            
+
             <View style={styles.detailItem}>
-              <IconSymbol name="square" size={20} color={realEstateColors.gray[700]} />
+              <IconSymbol
+                name="square"
+                size={20}
+                color={realEstateColors.gray[700]}
+              />
               <Text style={styles.detailValue}>{property.area}</Text>
               <Text style={styles.detailLabel}>Area</Text>
             </View>
@@ -179,7 +219,11 @@ export default function PropertyDetailsScreen() {
           <View style={styles.featuresContainer}>
             {property.features.map((feature, index) => (
               <View key={index} style={styles.featureItem}>
-                <IconSymbol name="checkmark.circle.fill" size={20} color={realEstateColors.primary[600]} />
+                <IconSymbol
+                  name="checkmark.circle.fill"
+                  size={20}
+                  color={realEstateColors.primary[600]}
+                />
                 <Text style={styles.featureText}>{feature}</Text>
               </View>
             ))}
@@ -217,14 +261,14 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   imageContainer: {
-    position: 'relative',
+    position: "relative",
   },
   propertyImage: {
     width: width,
     height: 300,
   },
   imageOverlay: {
-    position: 'absolute',
+    position: "absolute",
     bottom: spacing.md,
     right: spacing.lg,
     backgroundColor: realEstateColors.primary[600],
@@ -234,7 +278,7 @@ const styles = StyleSheet.create({
   },
   propertyPrice: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.white,
   },
   propertyInfo: {
@@ -243,9 +287,9 @@ const styles = StyleSheet.create({
     borderBottomColor: realEstateColors.gray[200],
   },
   propertyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: spacing.sm,
   },
   propertyTitleContainer: {
@@ -253,18 +297,18 @@ const styles = StyleSheet.create({
   },
   propertyTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.gray[900],
     marginBottom: spacing.xs,
   },
   propertyType: {
     fontSize: 16,
     color: realEstateColors.primary[600],
-    fontWeight: '600',
+    fontWeight: "600",
   },
   propertyLocationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.md,
   },
   propertyLocation: {
@@ -273,18 +317,18 @@ const styles = StyleSheet.create({
     marginLeft: spacing.xs,
   },
   propertyDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     backgroundColor: realEstateColors.gray[50],
     paddingVertical: spacing.md,
     borderRadius: borderRadius.lg,
   },
   detailItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   detailValue: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.gray[900],
     marginTop: spacing.xs,
   },
@@ -300,7 +344,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.gray[900],
     marginBottom: spacing.md,
   },
@@ -310,13 +354,13 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   featuresContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '50%',
+    flexDirection: "row",
+    alignItems: "center",
+    width: "50%",
     marginBottom: spacing.md,
   },
   featureText: {
@@ -325,7 +369,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
   buttonContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: spacing.lg,
     gap: spacing.md,
   },

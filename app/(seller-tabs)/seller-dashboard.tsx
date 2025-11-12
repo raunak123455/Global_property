@@ -23,20 +23,32 @@ import {
 } from "@/constants/RealEstateColors";
 import { useUser } from "@/contexts/UserContext";
 import { propertyAPI } from "@/utils/api";
+import { KycWarningBanner } from "@/components/KycWarningBanner";
+import { useKycReminder } from "@/hooks/useKycReminder";
 
 const { width } = Dimensions.get("window");
 
 export default function SellerDashboard() {
-  const { user } = useUser();
+  const { user, isLoading: userLoading } = useUser();
   const [stats, setStats] = useState({
     totalProperties: 0,
     activeProperties: 0,
     soldProperties: 0,
     pendingProperties: 0,
     totalValue: 0,
+    totalViews: 0,
+    totalInquiries: 0,
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { showReminder, dismissReminder } = useKycReminder();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!userLoading && !user) {
+      router.replace("/(auth)/login");
+    }
+  }, [userLoading, user]);
 
   const fetchStats = async () => {
     if (!user?.token) {
@@ -62,6 +74,8 @@ export default function SellerDashboard() {
           soldProperties: 0,
           pendingProperties: 0,
           totalValue: 0,
+          totalViews: 0,
+          totalInquiries: 0,
         });
       }
     } catch (error) {
@@ -73,6 +87,8 @@ export default function SellerDashboard() {
         soldProperties: 0,
         pendingProperties: 0,
         totalValue: 0,
+        totalViews: 0,
+        totalInquiries: 0,
       });
     } finally {
       setLoading(false);
@@ -101,24 +117,48 @@ export default function SellerDashboard() {
     IconComponent: any;
     iconName: string;
     color?: string;
-  }) => (
-    <View style={styles.statCard}>
-      <View style={[styles.statCardInner, shadows.md]}>
-        <View style={styles.statIconContainer}>
-          <LinearGradient
-            colors={[color + "20", color + "10"]}
-            style={styles.statIconGradient}
-          >
-            <IconComponent name={iconName} size={28} color={color} />
-          </LinearGradient>
+  }) => {
+    const [pressed, setPressed] = useState(false);
+
+    return (
+      <Pressable
+        style={styles.statCard}
+        onPressIn={() => setPressed(true)}
+        onPressOut={() => setPressed(false)}
+      >
+        <View
+          style={[
+            styles.statCardInner,
+            shadows.md,
+            pressed && styles.statCardPressed,
+          ]}
+        >
+          <View style={styles.statIconContainer}>
+            <View style={styles.statIconSquare}>
+              <IconComponent name={iconName} size={22} color={color} />
+            </View>
+          </View>
+          <View style={styles.statInfo}>
+            <Text
+              style={[styles.statTitle, pressed && styles.statTitlePressed]}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {title}
+            </Text>
+            <Text
+              style={[styles.statValue, pressed && styles.statValuePressed]}
+              numberOfLines={1}
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.8}
+            >
+              {value.toLocaleString()}
+            </Text>
+          </View>
         </View>
-        <View style={styles.statInfo}>
-          <Text style={styles.statValue}>{value}</Text>
-          <Text style={styles.statTitle}>{title}</Text>
-        </View>
-      </View>
-    </View>
-  );
+      </Pressable>
+    );
+  };
 
   const QuickAction = ({
     title,
@@ -159,6 +199,9 @@ export default function SellerDashboard() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* KYC Warning Banner - Positioned on top */}
+      {showReminder && <KycWarningBanner onDismiss={dismissReminder} />}
+
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -233,6 +276,20 @@ export default function SellerDashboard() {
               IconComponent={MaterialIcons}
               iconName="access-time"
               color={realEstateColors.orange[600]}
+            />
+            <StatCard
+              title="Total Views"
+              value={stats.totalViews}
+              IconComponent={Ionicons}
+              iconName="eye"
+              color={realEstateColors.secondary[600]}
+            />
+            <StatCard
+              title="Inquiries"
+              value={stats.totalInquiries}
+              IconComponent={Ionicons}
+              iconName="chatbubbles"
+              color={realEstateColors.purple[600]}
             />
           </View>
         </View>
@@ -363,47 +420,69 @@ const styles = StyleSheet.create({
   },
   // Stats Section
   statsSection: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
+    backgroundColor: realEstateColors.gray[50],
   },
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md,
+    justifyContent: "space-between",
   },
   statCard: {
-    flex: 1,
-    minWidth: "45%",
+    width: (width - spacing.lg * 2 - spacing.md) / 2, // Calculate exact width: (screen width - left/right padding - gap between cards) / 2
+    marginBottom: spacing.md,
   },
   statCardInner: {
     backgroundColor: realEstateColors.white,
-    borderRadius: 16,
-    padding: spacing.lg,
+    borderRadius: 12,
+    padding: spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: realEstateColors.gray[100],
+    borderColor: realEstateColors.gray[200],
+    position: "relative",
+    overflow: "hidden",
+    height: 100, // Fixed height for all cards
+  },
+  statCardPressed: {
+    backgroundColor: realEstateColors.primary[600],
+    borderColor: realEstateColors.primary[500],
   },
   statIconContainer: {
-    marginBottom: spacing.md,
+    marginRight: spacing.sm,
   },
-  statIconGradient: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+  statIconSquare: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: realEstateColors.gray[100],
   },
   statInfo: {
-    gap: spacing.xs,
+    flex: 1,
+    gap: spacing.xs / 2,
+    minWidth: 0, // Allow text to shrink
+  },
+  statTitle: {
+    fontSize: 12,
+    color: realEstateColors.gray[700],
+    fontWeight: "500",
+    flexShrink: 1,
+    lineHeight: 16,
+  },
+  statTitlePressed: {
+    color: realEstateColors.white,
   },
   statValue: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
     color: realEstateColors.gray[900],
   },
-  statTitle: {
-    fontSize: 13,
-    color: realEstateColors.gray[600],
-    fontWeight: "500",
+  statValuePressed: {
+    color: realEstateColors.white,
   },
   // Value Card Section
   valueSection: {

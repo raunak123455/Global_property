@@ -10,17 +10,32 @@ import {
   RefreshControl,
   Image,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { IconSymbol } from "@/components/IconSymbol";
 import { Card } from "@/components/ui/Card";
 import { GradientButton } from "@/components/ui/GradientButton";
-import { realEstateColors, spacing } from "@/constants/RealEstateColors";
+import { MaterialIcons, Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import {
+  realEstateColors,
+  spacing,
+  shadows,
+} from "@/constants/RealEstateColors";
 import { useUser } from "@/contexts/UserContext";
 import { propertyAPI } from "@/utils/api";
 
 export default function MyProperties() {
   const { user } = useUser();
   const [properties, setProperties] = useState([]);
+  const [stats, setStats] = useState({
+    totalProperties: 0,
+    activeProperties: 0,
+    soldProperties: 0,
+    pendingProperties: 0,
+    totalValue: 0,
+    totalViews: 0,
+    totalInquiries: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -33,21 +48,54 @@ export default function MyProperties() {
     }
 
     try {
-      console.log("Fetching properties with token:", user.token);
-      const response = await propertyAPI.getMyProperties(user.token);
-      console.log("Properties response:", response);
+      console.log("Fetching properties and stats with token:", user.token);
 
-      // Handle case where response might be undefined
-      if (response && Array.isArray(response)) {
-        setProperties(response);
+      // Fetch both properties and stats
+      const [propertiesResponse, statsResponse] = await Promise.all([
+        propertyAPI.getMyProperties(user.token),
+        propertyAPI.getPropertyStats(user.token),
+      ]);
+
+      console.log("Properties response:", propertiesResponse);
+      console.log("Stats response:", statsResponse);
+
+      // Handle properties response
+      if (propertiesResponse && propertiesResponse.properties) {
+        setProperties(propertiesResponse.properties);
+      } else if (propertiesResponse && Array.isArray(propertiesResponse)) {
+        setProperties(propertiesResponse);
       } else {
         console.log("No properties found or invalid response");
         setProperties([]);
       }
+
+      // Handle stats response
+      if (statsResponse && typeof statsResponse === "object") {
+        setStats(statsResponse);
+      } else {
+        setStats({
+          totalProperties: 0,
+          activeProperties: 0,
+          soldProperties: 0,
+          pendingProperties: 0,
+          totalValue: 0,
+          totalViews: 0,
+          totalInquiries: 0,
+        });
+      }
     } catch (error) {
-      console.error("Error fetching properties:", error);
+      console.error("Error fetching data:", error);
       Alert.alert("Error", "Failed to load properties");
       setProperties([]);
+      setStats({
+        totalProperties: 0,
+        activeProperties: 0,
+        soldProperties: 0,
+        pendingProperties: 0,
+        totalValue: 0,
+        totalViews: 0,
+        totalInquiries: 0,
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -177,10 +225,25 @@ export default function MyProperties() {
         >
           <IconSymbol
             name="pencil"
-            size={16}
+            size={20}
             color={realEstateColors.primary[600]}
           />
           <Text style={styles.actionText}>Edit</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.actionButton, styles.verifyButton]}
+          onPress={() =>
+            router.push(
+              `/(seller-tabs)/property-documents?propertyId=${property._id}`
+            )
+          }
+        >
+          <Ionicons
+            name="document-text"
+            size={20}
+            color={realEstateColors.secondary[600]}
+          />
+          <Text style={[styles.actionText, styles.verifyText]}>Docs</Text>
         </Pressable>
         <Pressable
           style={[styles.actionButton, styles.deleteButton]}
@@ -188,7 +251,7 @@ export default function MyProperties() {
         >
           <IconSymbol
             name="trash"
-            size={16}
+            size={20}
             color={realEstateColors.red[600]}
           />
           <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
@@ -216,6 +279,130 @@ export default function MyProperties() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {/* Analytics Section */}
+        <View style={styles.analyticsSection}>
+          <Text style={styles.analyticsTitle}>Overview</Text>
+
+          {/* Stats Grid */}
+          <View style={styles.statsGrid}>
+            <View style={[styles.statBox, shadows.sm]}>
+              <LinearGradient
+                colors={[
+                  realEstateColors.primary[600],
+                  realEstateColors.primary[700],
+                ]}
+                style={styles.statGradient}
+              >
+                <FontAwesome5
+                  name="building"
+                  size={24}
+                  color={realEstateColors.white}
+                />
+                <Text style={styles.statValue}>{stats.totalProperties}</Text>
+                <Text style={styles.statLabel}>Total Properties</Text>
+              </LinearGradient>
+            </View>
+
+            <View style={[styles.statBox, shadows.sm]}>
+              <LinearGradient
+                colors={[
+                  realEstateColors.green[500],
+                  realEstateColors.green[600],
+                ]}
+                style={styles.statGradient}
+              >
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={realEstateColors.white}
+                />
+                <Text style={styles.statValue}>{stats.activeProperties}</Text>
+                <Text style={styles.statLabel}>Active</Text>
+              </LinearGradient>
+            </View>
+
+            <View style={[styles.statBox, shadows.sm]}>
+              <LinearGradient
+                colors={[
+                  realEstateColors.blue[500],
+                  realEstateColors.blue[600],
+                ]}
+                style={styles.statGradient}
+              >
+                <MaterialIcons
+                  name="verified"
+                  size={24}
+                  color={realEstateColors.white}
+                />
+                <Text style={styles.statValue}>{stats.soldProperties}</Text>
+                <Text style={styles.statLabel}>Sold</Text>
+              </LinearGradient>
+            </View>
+
+            <View style={[styles.statBox, shadows.sm]}>
+              <LinearGradient
+                colors={[
+                  realEstateColors.orange[500],
+                  realEstateColors.orange[600],
+                ]}
+                style={styles.statGradient}
+              >
+                <MaterialIcons
+                  name="access-time"
+                  size={24}
+                  color={realEstateColors.white}
+                />
+                <Text style={styles.statValue}>{stats.pendingProperties}</Text>
+                <Text style={styles.statLabel}>Pending</Text>
+              </LinearGradient>
+            </View>
+          </View>
+
+          {/* Value and Engagement Stats */}
+          <View style={styles.additionalStats}>
+            <View style={[styles.valueBox, shadows.sm]}>
+              <View style={styles.valueBoxContent}>
+                <FontAwesome5
+                  name="dollar-sign"
+                  size={20}
+                  color={realEstateColors.green[600]}
+                />
+                <View style={styles.valueTextContainer}>
+                  <Text style={styles.valueLabel}>Total Value</Text>
+                  <Text style={styles.valueAmount}>
+                    ${stats.totalValue.toLocaleString()}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.engagementRow}>
+              <View style={[styles.engagementBox, shadows.sm]}>
+                <Ionicons
+                  name="eye"
+                  size={20}
+                  color={realEstateColors.secondary[600]}
+                />
+                <Text style={styles.engagementValue}>{stats.totalViews}</Text>
+                <Text style={styles.engagementLabel}>Views</Text>
+              </View>
+
+              <View style={[styles.engagementBox, shadows.sm]}>
+                <Ionicons
+                  name="chatbubbles"
+                  size={20}
+                  color={realEstateColors.primary[600]}
+                />
+                <Text style={styles.engagementValue}>
+                  {stats.totalInquiries}
+                </Text>
+                <Text style={styles.engagementLabel}>Inquiries</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Properties List */}
         {properties.length === 0 ? (
           <View style={styles.emptyState}>
             <IconSymbol
@@ -355,26 +542,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   actionButton: {
     flex: 1,
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: spacing.sm,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: realEstateColors.primary[600],
-    gap: spacing.xs,
+    backgroundColor: realEstateColors.white,
+    minHeight: 50,
+  },
+  verifyButton: {
+    borderColor: realEstateColors.secondary[600],
   },
   deleteButton: {
     borderColor: realEstateColors.red[600],
   },
   actionText: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 11,
+    fontWeight: "600",
     color: realEstateColors.primary[600],
+    marginTop: 4,
+  },
+  verifyText: {
+    color: realEstateColors.secondary[600],
   },
   deleteText: {
     color: realEstateColors.red[600],
@@ -401,5 +596,98 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     paddingHorizontal: spacing.xl,
+  },
+  // Analytics Section Styles
+  analyticsSection: {
+    padding: spacing.lg,
+    backgroundColor: realEstateColors.gray[50],
+  },
+  analyticsTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: realEstateColors.gray[900],
+    marginBottom: spacing.md,
+  },
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  statBox: {
+    flex: 1,
+    minWidth: "47%",
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  statGradient: {
+    padding: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 110,
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: realEstateColors.white,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.95)",
+    fontWeight: "500",
+  },
+  additionalStats: {
+    gap: spacing.sm,
+  },
+  valueBox: {
+    backgroundColor: realEstateColors.white,
+    borderRadius: 12,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  valueBoxContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  valueTextContainer: {
+    flex: 1,
+  },
+  valueLabel: {
+    fontSize: 14,
+    color: realEstateColors.gray[600],
+    marginBottom: spacing.xs,
+  },
+  valueAmount: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: realEstateColors.green[600],
+  },
+  engagementRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  engagementBox: {
+    flex: 1,
+    backgroundColor: realEstateColors.white,
+    borderRadius: 12,
+    padding: spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 90,
+  },
+  engagementValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: realEstateColors.gray[900],
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  engagementLabel: {
+    fontSize: 12,
+    color: realEstateColors.gray[600],
+    fontWeight: "500",
   },
 });

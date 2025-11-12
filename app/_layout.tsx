@@ -52,6 +52,10 @@ export default function RootLayout() {
               options={{ headerShown: false }}
             />
             <Stack.Screen
+              name="(notary-tabs)"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
               name="modal"
               options={{
                 presentation: "modal",

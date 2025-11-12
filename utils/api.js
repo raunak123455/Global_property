@@ -109,8 +109,19 @@ export const propertyAPI = {
   },
 
   // Get seller's properties
-  getMyProperties: async (token) => {
-    return apiRequest("/properties", "GET", null, token);
+  getMyProperties: async (token, queryParams = {}) => {
+    const params = new URLSearchParams(queryParams).toString();
+    const endpoint = params
+      ? `/properties/my-properties?${params}`
+      : "/properties/my-properties";
+    return apiRequest(endpoint, "GET", null, token);
+  },
+
+  // Get all properties (for buyers/public with filters)
+  getAllProperties: async (token, queryParams = {}) => {
+    const params = new URLSearchParams(queryParams).toString();
+    const endpoint = params ? `/properties/all?${params}` : "/properties/all";
+    return apiRequest(endpoint, "GET", null, token);
   },
 
   // Get single property
@@ -131,6 +142,84 @@ export const propertyAPI = {
   // Get property statistics
   getPropertyStats: async (token) => {
     return apiRequest("/properties/stats", "GET", null, token);
+  },
+
+  // Add inquiry to a property
+  addInquiry: async (propertyId, inquiryData, token) => {
+    return apiRequest(
+      `/properties/${propertyId}/inquiries`,
+      "POST",
+      inquiryData,
+      token
+    );
+  },
+
+  // Get all inquiries for seller's properties
+  getMyInquiries: async (token) => {
+    return apiRequest("/properties/inquiries", "GET", null, token);
+  },
+
+  // Submit legal documents for a property
+  submitLegalDocuments: async (propertyId, documents, token) => {
+    return apiRequest(
+      `/properties/${propertyId}/legal-documents`,
+      "POST",
+      { documents },
+      token
+    );
+  },
+
+  // Get legal documents for a property
+  getLegalDocuments: async (propertyId, token) => {
+    return apiRequest(
+      `/properties/${propertyId}/legal-documents`,
+      "GET",
+      null,
+      token
+    );
+  },
+
+  // Update notary status for legal documents (notaries/admins only)
+  updateNotaryStatus: async (propertyId, notaryStatus, notes, token) => {
+    return apiRequest(
+      `/properties/${propertyId}/legal-documents/notary-status`,
+      "PUT",
+      { notaryStatus, notes },
+      token
+    );
+  },
+
+  // Get all properties with submitted legal documents (notaries/admins only)
+  getPropertiesWithLegalDocuments: async (token) => {
+    return apiRequest(
+      "/properties/legal-documents/submitted",
+      "GET",
+      null,
+      token
+    );
+  },
+};
+
+// KYC API functions
+export const kycAPI = {
+  // Submit KYC for verification
+  submitKyc: async (kycData, token) => {
+    return apiRequest("/kyc/submit", "POST", kycData, token);
+  },
+
+  // Get KYC status
+  getKycStatus: async (token) => {
+    return apiRequest("/kyc/status", "GET", null, token);
+  },
+
+  // Admin: Approve KYC
+  approveKyc: async (userId, token) => {
+    return apiRequest(`/kyc/approve/${userId}`, "PUT", null, token);
+  },
+
+  // Admin: Reject KYC
+  rejectKyc: async (userId, reason, token) => {
+    return apiRequest(`/kyc/reject/${userId}`, "PUT", { reason }, token);
   },
 };
 

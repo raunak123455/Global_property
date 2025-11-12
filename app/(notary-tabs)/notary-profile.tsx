@@ -16,7 +16,7 @@ import { realEstateColors, spacing } from "@/constants/RealEstateColors";
 import { useUser } from "@/contexts/UserContext";
 import { KycWarningBanner } from "@/components/KycWarningBanner";
 
-export default function SellerProfile() {
+export default function NotaryProfile() {
   const { user, logout, isLoading } = useUser();
   const [showKycBanner, setShowKycBanner] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -25,8 +25,10 @@ export default function SellerProfile() {
     email: user?.email || "",
     phone: "",
     bio: "",
-    company: "",
     licenseNumber: "",
+    commissionExpiry: "",
+    bondNumber: "",
+    jurisdictions: "",
   });
 
   // Redirect to login if not authenticated
@@ -120,7 +122,7 @@ export default function SellerProfile() {
         <Text style={styles.title}>Profile</Text>
       </View>
 
-      {/* Temporary Test: KYC Warning Banner - Positioned on top */}
+      {/* KYC Warning Banner */}
       {showKycBanner && (
         <KycWarningBanner onDismiss={() => setShowKycBanner(false)} />
       )}
@@ -151,16 +153,9 @@ export default function SellerProfile() {
           </Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
           <View style={styles.roleBadge}>
-            <Text style={styles.roleText}>Seller</Text>
+            <Text style={styles.roleText}>Notary Public</Text>
           </View>
         </View>
-
-        {/* Temporary Test Button for KYC Banner */}
-        <GradientButton
-          title={showKycBanner ? "Hide KYC Banner" : "Show KYC Banner (Test)"}
-          onPress={() => setShowKycBanner(!showKycBanner)}
-          style={styles.testButton}
-        />
 
         <ProfileSection title="Account Information">
           <Card style={styles.sectionCard}>
@@ -193,15 +188,27 @@ export default function SellerProfile() {
         <ProfileSection title="Professional Information">
           <Card style={styles.sectionCard}>
             <ProfileItem
-              label="Company"
-              value={profileData.company || "Not provided"}
-              icon="building"
-            />
-            <View style={styles.divider} />
-            <ProfileItem
               label="License Number"
               value={profileData.licenseNumber || "Not provided"}
               icon="doc.text"
+            />
+            <View style={styles.divider} />
+            <ProfileItem
+              label="Commission Expiry"
+              value={profileData.commissionExpiry || "Not provided"}
+              icon="calendar"
+            />
+            <View style={styles.divider} />
+            <ProfileItem
+              label="Bond Number"
+              value={profileData.bondNumber || "Not provided"}
+              icon="shield"
+            />
+            <View style={styles.divider} />
+            <ProfileItem
+              label="Jurisdictions"
+              value={profileData.jurisdictions || "Not provided"}
+              icon="map"
             />
             <View style={styles.divider} />
             <ProfileItem
@@ -218,6 +225,12 @@ export default function SellerProfile() {
               label="Notifications"
               value="Manage notification preferences"
               icon="bell"
+            />
+            <View style={styles.divider} />
+            <ProfileItem
+              label="Availability"
+              value="Set your working hours"
+              icon="clock"
             />
             <View style={styles.divider} />
             <ProfileItem
@@ -407,9 +420,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: realEstateColors.red[600],
-  },
-  testButton: {
-    marginHorizontal: spacing.lg,
-    marginVertical: spacing.md,
   },
 });

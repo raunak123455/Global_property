@@ -47,6 +47,7 @@ export default function LoginScreen() {
         lastName: response.lastName,
         email: response.email,
         role: response.role,
+        kycVerified: response.kycVerified || false,
         token: response.token,
       });
 
@@ -54,6 +55,9 @@ export default function LoginScreen() {
       if (response.role === "seller") {
         console.log("Navigating to seller dashboard...");
         router.replace("/(seller-tabs)/seller-dashboard");
+      } else if (response.role === "notary") {
+        console.log("Navigating to notary dashboard...");
+        router.replace("/(notary-tabs)/notary-dashboard");
       } else {
         console.log("Navigating to buyer dashboard...");
         router.replace("/(tabs)/dashboard");

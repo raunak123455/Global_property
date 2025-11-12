@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/auth");
 const propertyRoutes = require("./routes/property");
+const kycRoutes = require("./routes/kyc");
 
 const app = express();
 
@@ -15,8 +16,8 @@ connectDB();
 const corsOptions = {
   origin: [
     "http://localhost:8081", // Expo default port
-    "http://192.168.1.4:8081", // Your specific Expo address
-    "exp://192.168.1.4:8081", // Expo protocol
+    "http://192.168.1.6:8081", // Your specific Expo address
+    "exp://192.168.1.6:8081", // Expo protocol
     "http://localhost:5000", // Backend itself for testing
   ],
   credentials: true,
@@ -25,11 +26,14 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-app.use(express.json());
+// Increase body size limit to handle large base64 image uploads (50MB)
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/properties", propertyRoutes);
+app.use("/api/kyc", kycRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {

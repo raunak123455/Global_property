@@ -3,7 +3,7 @@ import { Tabs } from "expo-router";
 import { IconSymbol } from "@/components/IconSymbol";
 import { realEstateColors } from "@/constants/RealEstateColors";
 
-export default function SellerTabLayout() {
+export default function NotaryTabLayout() {
   return (
     <Tabs
       screenOptions={{
@@ -25,7 +25,7 @@ export default function SellerTabLayout() {
       }}
     >
       <Tabs.Screen
-        name="seller-dashboard"
+        name="notary-dashboard"
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
@@ -34,51 +34,30 @@ export default function SellerTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="my-properties"
+        name="document-verification"
         options={{
-          title: "My Properties",
+          title: "Documents",
           tabBarIcon: ({ color, size }) => (
-            <IconSymbol name="building.2" size={size} color={color} />
+            <IconSymbol name="doc.text" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="add-property"
+        name="appointments"
         options={{
-          title: "Add Property",
+          title: "Appointments",
           tabBarIcon: ({ color, size }) => (
-            <IconSymbol name="plus" size={size} color={color} />
+            <IconSymbol name="calendar" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="property-inquiries"
-        options={{
-          title: "Inquiries",
-          tabBarIcon: ({ color, size }) => (
-            <IconSymbol name="message" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="seller-profile"
+        name="notary-profile"
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
             <IconSymbol name="person" size={size} color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="edit-property"
-        options={{
-          href: null, // This hides the screen from the tab bar
-        }}
-      />
-      <Tabs.Screen
-        name="property-documents"
-        options={{
-          href: null, // This hides the screen from the tab bar
         }}
       />
     </Tabs>

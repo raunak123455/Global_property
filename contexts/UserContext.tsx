@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define the user type
 export interface User {
@@ -8,6 +14,7 @@ export interface User {
   lastName: string;
   email: string;
   role: string;
+  kycVerified: boolean;
   token: string;
 }
 
@@ -23,7 +30,9 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Provider component
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,12 +40,12 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const userData = await AsyncStorage.getItem('user');
+        const userData = await AsyncStorage.getItem("user");
         if (userData) {
           setUser(JSON.parse(userData));
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error("Error loading user data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -49,9 +58,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const saveUserData = async () => {
       if (user) {
-        await AsyncStorage.setItem('user', JSON.stringify(user));
+        await AsyncStorage.setItem("user", JSON.stringify(user));
       } else {
-        await AsyncStorage.removeItem('user');
+        await AsyncStorage.removeItem("user");
       }
     };
 
@@ -59,8 +68,14 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user]);
 
   const logout = async () => {
+    // Clear KYC reminder session for the current user
+    if (user) {
+      const userId = user._id || user.email;
+      await AsyncStorage.removeItem(`kyc_last_reminder_${userId}`);
+      await AsyncStorage.removeItem(`kyc_login_session_${userId}`);
+    }
     setUser(null);
-    await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem("user");
   };
 
   return (
@@ -74,7 +89,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useUser = (): UserContextType => {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 };

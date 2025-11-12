@@ -27,14 +27,42 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["buyer", "agent", "seller"],
+      enum: ["buyer", "agent", "seller", "notary"],
       default: "buyer",
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    profileImage: {
+      type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    kycVerified: {
+      type: Boolean,
+      default: false,
+    },
+    kycSubmittedAt: {
+      type: Date,
+    },
+    kycVerifiedAt: {
+      type: Date,
     },
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+// Virtual for getting user's full name
+userSchema.virtual("fullName").get(function () {
+  return `${this.firstName} ${this.lastName}`;
+});
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {

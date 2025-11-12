@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,20 @@ import {
   Pressable,
   Image,
   FlatList,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useRouter } from 'expo-router';
-import { Card } from '@/components/ui/Card';
-import { CustomButton } from '@/components/ui/CustomButton';
-import { IconSymbol } from '@/components/IconSymbol';
-import { realEstateColors, spacing, borderRadius } from '@/constants/RealEstateColors';
-import { useUser } from '@/contexts/UserContext';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useRouter } from "expo-router";
+import { Card } from "@/components/ui/Card";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { IconSymbol } from "@/components/IconSymbol";
+import {
+  realEstateColors,
+  spacing,
+  borderRadius,
+} from "@/constants/RealEstateColors";
+import { useUser } from "@/contexts/UserContext";
+import { KycWarningBanner } from "@/components/KycWarningBanner";
+import { useKycReminder } from "@/hooks/useKycReminder";
 
 interface Property {
   id: string;
@@ -30,51 +36,59 @@ interface Property {
 
 const mockProperties: Property[] = [
   {
-    id: '1',
-    title: 'Modern Villa',
-    price: '$850,000',
-    location: 'Beverly Hills, CA',
+    id: "1",
+    title: "Modern Villa",
+    price: "$850,000",
+    location: "Beverly Hills, CA",
     bedrooms: 4,
     bathrooms: 3,
-    area: '2,500 sq ft',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400',
+    area: "2,500 sq ft",
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400",
     isFavorite: false,
   },
   {
-    id: '2',
-    title: 'Luxury Apartment',
-    price: '$650,000',
-    location: 'Manhattan, NY',
+    id: "2",
+    title: "Luxury Apartment",
+    price: "$650,000",
+    location: "Manhattan, NY",
     bedrooms: 2,
     bathrooms: 2,
-    area: '1,800 sq ft',
-    image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400',
+    area: "1,800 sq ft",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400",
     isFavorite: true,
   },
   {
-    id: '3',
-    title: 'Cozy House',
-    price: '$450,000',
-    location: 'Austin, TX',
+    id: "3",
+    title: "Cozy House",
+    price: "$450,000",
+    location: "Austin, TX",
     bedrooms: 3,
     bathrooms: 2,
-    area: '1,600 sq ft',
-    image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400',
+    area: "1,600 sq ft",
+    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400",
     isFavorite: false,
   },
 ];
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const [properties, setProperties] = useState(mockProperties);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const { showReminder, dismissReminder } = useKycReminder();
 
-  const categories = ['All', 'House', 'Apartment', 'Villa', 'Condo'];
+  const categories = ["All", "House", "Apartment", "Villa", "Condo"];
+
+  // Redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/(auth)/login");
+    }
+  }, [isLoading, user]);
 
   const toggleFavorite = (propertyId: string) => {
-    setProperties(prev =>
-      prev.map(property =>
+    setProperties((prev) =>
+      prev.map((property) =>
         property.id === propertyId
           ? { ...property, isFavorite: !property.isFavorite }
           : property
@@ -83,7 +97,9 @@ export default function DashboardScreen() {
   };
 
   const renderProperty = ({ item }: { item: Property }) => (
-    <Pressable onPress={() => router.push(`/(tabs)/property-details?id=${item.id}`)}>
+    <Pressable
+      onPress={() => router.push(`/(tabs)/property-details?id=${item.id}`)}
+    >
       <Card style={styles.propertyCard} variant="elevated">
         <View style={styles.imageContainer}>
           <Image source={{ uri: item.image }} style={styles.propertyImage} />
@@ -95,29 +111,45 @@ export default function DashboardScreen() {
             }}
           >
             <IconSymbol
-              name={item.isFavorite ? 'heart.fill' : 'heart'}
+              name={item.isFavorite ? "heart.fill" : "heart"}
               size={20}
-              color={item.isFavorite ? realEstateColors.error : realEstateColors.white}
+              color={
+                item.isFavorite
+                  ? realEstateColors.error
+                  : realEstateColors.white
+              }
             />
           </Pressable>
         </View>
-        
+
         <View style={styles.propertyInfo}>
           <Text style={styles.propertyTitle}>{item.title}</Text>
           <Text style={styles.propertyPrice}>{item.price}</Text>
           <Text style={styles.propertyLocation}>{item.location}</Text>
-          
+
           <View style={styles.propertyDetails}>
             <View style={styles.detailItem}>
-              <IconSymbol name="bed.double" size={16} color={realEstateColors.gray[500]} />
+              <IconSymbol
+                name="bed.double"
+                size={16}
+                color={realEstateColors.gray[500]}
+              />
               <Text style={styles.detailText}>{item.bedrooms}</Text>
             </View>
             <View style={styles.detailItem}>
-              <IconSymbol name="drop" size={16} color={realEstateColors.gray[500]} />
+              <IconSymbol
+                name="drop"
+                size={16}
+                color={realEstateColors.gray[500]}
+              />
               <Text style={styles.detailText}>{item.bathrooms}</Text>
             </View>
             <View style={styles.detailItem}>
-              <IconSymbol name="square" size={16} color={realEstateColors.gray[500]} />
+              <IconSymbol
+                name="square"
+                size={16}
+                color={realEstateColors.gray[500]}
+              />
               <Text style={styles.detailText}>{item.area}</Text>
             </View>
           </View>
@@ -127,8 +159,11 @@ export default function DashboardScreen() {
   );
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
-      <ScrollView 
+    <SafeAreaView edges={["top"]} style={styles.container}>
+      {/* KYC Warning Banner - Positioned on top */}
+      {showReminder && <KycWarningBanner onDismiss={dismissReminder} />}
+
+      <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
@@ -137,12 +172,12 @@ export default function DashboardScreen() {
           <View>
             <Text style={styles.greeting}>Good Morning</Text>
             <Text style={styles.userName}>
-              {user ? `${user.firstName} ${user.lastName}` : 'Guest'}
+              {user ? `${user.firstName} ${user.lastName}` : "Guest"}
             </Text>
           </View>
           <Pressable
             style={styles.profileButton}
-            onPress={() => router.push('/(tabs)/profile')}
+            onPress={() => router.push("/(tabs)/profile")}
           >
             <IconSymbol
               name="person.circle"
@@ -155,7 +190,7 @@ export default function DashboardScreen() {
         {/* Search Bar */}
         <Pressable
           style={styles.searchBar}
-          onPress={() => router.push('/(tabs)/search')}
+          onPress={() => router.push("/(tabs)/search")}
         >
           <IconSymbol
             name="magnifyingglass"
@@ -220,11 +255,11 @@ export default function DashboardScreen() {
         <View style={styles.propertiesContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Properties</Text>
-            <Pressable onPress={() => router.push('/(tabs)/search')}>
+            <Pressable onPress={() => router.push("/(tabs)/search")}>
               <Text style={styles.seeAllText}>See All</Text>
             </Pressable>
           </View>
-          
+
           <FlatList
             data={properties}
             renderItem={renderProperty}
@@ -241,19 +276,27 @@ export default function DashboardScreen() {
           <View style={styles.actionsGrid}>
             <CustomButton
               title="Buy Property"
-              onPress={() => console.log('Buy property')}
+              onPress={() => console.log("Buy property")}
               style={styles.actionButton}
               leftIcon={
-                <IconSymbol name="house" size={20} color={realEstateColors.white} />
+                <IconSymbol
+                  name="house"
+                  size={20}
+                  color={realEstateColors.white}
+                />
               }
             />
             <CustomButton
               title="Rent Property"
-              onPress={() => console.log('Rent property')}
+              onPress={() => console.log("Rent property")}
               variant="outline"
               style={styles.actionButton}
               leftIcon={
-                <IconSymbol name="key" size={20} color={realEstateColors.primary[600]} />
+                <IconSymbol
+                  name="key"
+                  size={20}
+                  color={realEstateColors.primary[600]}
+                />
               }
             />
           </View>
@@ -272,9 +315,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
@@ -284,15 +327,15 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.gray[900],
   },
   profileButton: {
     padding: spacing.xs,
   },
   searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: realEstateColors.white,
     marginHorizontal: spacing.lg,
     marginBottom: spacing.lg,
@@ -309,19 +352,19 @@ const styles = StyleSheet.create({
     color: realEstateColors.gray[400],
   },
   statsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.lg,
     gap: spacing.sm,
   },
   statCard: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.md,
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.primary[600],
   },
   statLabel: {
@@ -334,7 +377,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.gray[900],
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
@@ -358,7 +401,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     color: realEstateColors.gray[600],
-    fontWeight: '500',
+    fontWeight: "500",
   },
   categoryTextActive: {
     color: realEstateColors.white,
@@ -367,16 +410,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
   },
   seeAllText: {
     fontSize: 14,
     color: realEstateColors.primary[600],
-    fontWeight: '500',
+    fontWeight: "500",
   },
   propertiesList: {
     paddingHorizontal: spacing.lg,
@@ -385,40 +428,40 @@ const styles = StyleSheet.create({
   propertyCard: {
     width: 280,
     padding: 0,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   imageContainer: {
-    position: 'relative',
+    position: "relative",
   },
   propertyImage: {
-    width: '100%',
+    width: "100%",
     height: 180,
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
   },
   favoriteButton: {
-    position: 'absolute',
+    position: "absolute",
     top: spacing.sm,
     right: spacing.sm,
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   propertyInfo: {
     padding: spacing.md,
   },
   propertyTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.gray[900],
     marginBottom: spacing.xs,
   },
   propertyPrice: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.primary[600],
     marginBottom: spacing.xs,
   },
@@ -428,12 +471,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   propertyDetails: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.xs,
   },
   detailText: {
@@ -445,7 +488,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   actionsGrid: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   actionButton: {

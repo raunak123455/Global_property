@@ -7,6 +7,7 @@ import {
   Pressable,
   Dimensions,
   Animated,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -19,6 +20,7 @@ import {
 } from "@/constants/RealEstateColors";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { CustomButton } from "@/components/ui/CustomButton";
+import { useUser } from "@/contexts/UserContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -26,27 +28,77 @@ export default function HomeScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const { user, isLoading } = useUser();
 
   useEffect(() => {
-    // Entrance animations
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+    // Check if user is already logged in
+    if (!isLoading && user) {
+      console.log("User already logged in, redirecting...", user);
+      // Navigate based on user role
+      if (user.role === "seller") {
+        router.replace("/(seller-tabs)/seller-dashboard");
+      } else if (user.role === "notary") {
+        router.replace("/(notary-tabs)/notary-dashboard");
+      } else {
+        router.replace("/(tabs)/dashboard");
+      }
+    }
+  }, [isLoading, user]);
+
+  useEffect(() => {
+    // Only run animations if user is not logged in
+    if (!isLoading && !user) {
+      // Entrance animations
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isLoading, user]);
+
+  // Show loading screen while checking authentication
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Image
+          source={require("@/assets/images/estate.png")}
+          style={styles.backgroundImage}
+          resizeMode="cover"
+        />
+        <LinearGradient
+          colors={[
+            "rgba(0, 0, 0, 0)",
+            "rgba(0, 0, 0, 0.3)",
+            "rgba(0, 0, 0, 0.7)",
+            "rgba(0, 0, 0, 0.9)",
+          ]}
+          locations={[0, 0.3, 0.7, 1]}
+          style={styles.gradient}
+        />
+        <View style={styles.loadingContainer}>
+          <Text style={styles.brandText}>GLOBALO</Text>
+          <ActivityIndicator
+            size="large"
+            color={realEstateColors.primary[400]}
+            style={styles.loader}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -148,6 +200,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.lg,
+  },
+  loader: {
+    marginTop: spacing.md,
   },
   header: {
     position: "absolute",

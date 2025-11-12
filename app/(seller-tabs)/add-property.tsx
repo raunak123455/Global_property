@@ -66,67 +66,158 @@ export default function AddProperty() {
   };
 
   const handleAddProperty = async () => {
-    // Basic validation
-    const requiredFields = [
-      "title",
-      "description",
-      "price",
-      "address",
-      "city",
-      "state",
-      "zipCode",
-      "bedrooms",
-      "bathrooms",
-      "area",
-    ];
+    // Basic validation with better error messages
+    const requiredFields = {
+      title: "Property Title",
+      description: "Description",
+      price: "Price",
+      address: "Address",
+      city: "City",
+      state: "State",
+      zipCode: "ZIP Code",
+      bedrooms: "Bedrooms",
+      bathrooms: "Bathrooms",
+      area: "Area",
+    };
 
-    for (const field of requiredFields) {
-      if (!(formData as any)[field]) {
-        Alert.alert("Error", `Please fill in ${field}`);
+    // Check for empty required fields
+    for (const [field, label] of Object.entries(requiredFields)) {
+      if (!(formData as any)[field] || (formData as any)[field].trim() === "") {
+        Alert.alert(
+          "Missing Information",
+          `Please fill in the ${label} field.`,
+          [{ text: "OK" }]
+        );
         return;
       }
     }
 
+    // Validate numeric fields
+    const price = parseFloat(formData.price);
+    if (isNaN(price) || price <= 0) {
+      Alert.alert(
+        "Invalid Input",
+        "Please enter a valid price greater than 0."
+      );
+      return;
+    }
+
+    const bedrooms = parseInt(formData.bedrooms);
+    if (isNaN(bedrooms) || bedrooms < 0) {
+      Alert.alert("Invalid Input", "Please enter a valid number of bedrooms.");
+      return;
+    }
+
+    const bathrooms = parseInt(formData.bathrooms);
+    if (isNaN(bathrooms) || bathrooms < 0) {
+      Alert.alert("Invalid Input", "Please enter a valid number of bathrooms.");
+      return;
+    }
+
+    const area = parseInt(formData.area);
+    if (isNaN(area) || area <= 0) {
+      Alert.alert("Invalid Input", "Please enter a valid area greater than 0.");
+      return;
+    }
+
+    // Check user authentication
     if (!user?.token) {
-      Alert.alert("Error", "User not authenticated");
+      Alert.alert(
+        "Authentication Required",
+        "Please log in to add a property.",
+        [{ text: "OK" }]
+      );
       return;
     }
 
     setLoading(true);
 
     try {
+      // Prepare property data for API
       const propertyData = {
-        title: formData.title,
-        description: formData.description,
-        price: parseFloat(formData.price),
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        price: price,
         location: {
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
+          address: formData.address.trim(),
+          city: formData.city.trim(),
+          state: formData.state.trim(),
+          zipCode: formData.zipCode.trim(),
         },
         images:
           selectedImages.length > 0
             ? selectedImages
             : ["https://via.placeholder.com/400x300"],
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseInt(formData.bathrooms),
-        area: parseInt(formData.area),
+        bedrooms: bedrooms,
+        bathrooms: bathrooms,
+        area: area,
         propertyType: formData.propertyType,
         yearBuilt: formData.yearBuilt
           ? parseInt(formData.yearBuilt)
           : undefined,
         features: formData.features
-          ? formData.features.split(",").map((f) => f.trim())
+          ? formData.features
+              .split(",")
+              .map((f) => f.trim())
+              .filter((f) => f.length > 0)
           : [],
+        status: "active", // Default status for new properties
       };
 
-      await propertyAPI.createProperty(propertyData, user.token);
-      Alert.alert("Success", "Property added successfully!");
-      router.back();
-    } catch (error) {
+      console.log("Creating property with data:", propertyData);
+
+      // Make API call to create property
+      const response = await propertyAPI.createProperty(
+        propertyData,
+        user.token
+      );
+
+      console.log("Property created successfully:", response);
+
+      // Show success message
+      Alert.alert(
+        "Success!",
+        "Your property has been added successfully and is now live.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Navigate back to properties list
+              router.back();
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
       console.error("Error adding property:", error);
-      Alert.alert("Error", "Failed to add property");
+
+      // Better error handling with specific messages
+      let errorMessage = "Failed to add property. Please try again.";
+
+      if (error.message) {
+        if (
+          error.message.includes("network") ||
+          error.message.includes("connect")
+        ) {
+          errorMessage =
+            "Cannot connect to server. Please check your internet connection and ensure the backend server is running.";
+        } else if (
+          error.message.includes("401") ||
+          error.message.includes("authorized")
+        ) {
+          errorMessage = "Your session has expired. Please log in again.";
+        } else if (
+          error.message.includes("403") ||
+          error.message.includes("forbidden")
+        ) {
+          errorMessage =
+            "You don't have permission to add properties. Please ensure your account is set as a seller.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      Alert.alert("Error", errorMessage, [{ text: "OK" }]);
     } finally {
       setLoading(false);
     }
