@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,15 +7,19 @@ import {
   Pressable,
   Image,
   FlatList,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
-import { CustomButton } from '@/components/ui/CustomButton';
-import { Header } from '@/components/ui/Header';
-import { IconSymbol } from '@/components/IconSymbol';
-import { realEstateColors, spacing, borderRadius } from '@/constants/RealEstateColors';
-import { useRouter } from 'expo-router';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { Header } from "@/components/ui/Header";
+import { IconSymbol } from "@/components/IconSymbol";
+import {
+  realEstateColors,
+  spacing,
+  borderRadius,
+} from "@/constants/RealEstateColors";
+import { useRouter } from "expo-router";
 
 interface Property {
   id: string;
@@ -33,79 +36,80 @@ interface Property {
 
 const mockSearchResults: Property[] = [
   {
-    id: '1',
-    title: 'Modern Villa',
-    price: '$850,000',
-    location: 'Beverly Hills, CA',
+    id: "1",
+    title: "Modern Villa",
+    price: "$850,000",
+    location: "Beverly Hills, CA",
     bedrooms: 4,
     bathrooms: 3,
-    area: '2,500 sq ft',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400',
+    area: "2,500 sq ft",
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400",
     isFavorite: false,
-    type: 'Villa',
+    type: "Villa",
   },
   {
-    id: '2',
-    title: 'Luxury Apartment',
-    price: '$650,000',
-    location: 'Manhattan, NY',
+    id: "2",
+    title: "Luxury Apartment",
+    price: "$650,000",
+    location: "Manhattan, NY",
     bedrooms: 2,
     bathrooms: 2,
-    area: '1,800 sq ft',
-    image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400',
+    area: "1,800 sq ft",
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400",
     isFavorite: true,
-    type: 'Apartment',
+    type: "Apartment",
   },
   {
-    id: '3',
-    title: 'Cozy House',
-    price: '$450,000',
-    location: 'Austin, TX',
+    id: "3",
+    title: "Cozy House",
+    price: "$450,000",
+    location: "Austin, TX",
     bedrooms: 3,
     bathrooms: 2,
-    area: '1,600 sq ft',
-    image: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400',
+    area: "1,600 sq ft",
+    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400",
     isFavorite: false,
-    type: 'House',
+    type: "House",
   },
   {
-    id: '4',
-    title: 'Downtown Condo',
-    price: '$520,000',
-    location: 'Seattle, WA',
+    id: "4",
+    title: "Downtown Condo",
+    price: "$520,000",
+    location: "Seattle, WA",
     bedrooms: 2,
     bathrooms: 1,
-    area: '1,200 sq ft',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400',
+    area: "1,200 sq ft",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400",
     isFavorite: false,
-    type: 'Condo',
+    type: "Condo",
   },
 ];
 
 export default function SearchScreen() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [properties, setProperties] = useState(mockSearchResults);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const filters = [
-    { id: 'house', label: 'House', icon: 'house' },
-    { id: 'apartment', label: 'Apartment', icon: 'building.2' },
-    { id: 'villa', label: 'Villa', icon: 'house.lodge' },
-    { id: 'condo', label: 'Condo', icon: 'building' },
+    { id: "house", label: "House", icon: "house" },
+    { id: "apartment", label: "Apartment", icon: "building.2" },
+    { id: "villa", label: "Villa", icon: "house.lodge" },
+    { id: "condo", label: "Condo", icon: "building" },
   ];
 
   const priceRanges = [
-    { id: 'under-300k', label: 'Under $300K' },
-    { id: '300k-500k', label: '$300K - $500K' },
-    { id: '500k-800k', label: '$500K - $800K' },
-    { id: 'over-800k', label: 'Over $800K' },
+    { id: "under-300k", label: "Under $300K" },
+    { id: "300k-500k", label: "$300K - $500K" },
+    { id: "500k-800k", label: "$500K - $800K" },
+    { id: "over-800k", label: "Over $800K" },
   ];
 
   const toggleFavorite = (propertyId: string) => {
-    setProperties(prev =>
-      prev.map(property =>
+    setProperties((prev) =>
+      prev.map((property) =>
         property.id === propertyId
           ? { ...property, isFavorite: !property.isFavorite }
           : property
@@ -114,19 +118,21 @@ export default function SearchScreen() {
   };
 
   const toggleFilter = (filterId: string) => {
-    setSelectedFilters(prev =>
+    setSelectedFilters((prev) =>
       prev.includes(filterId)
-        ? prev.filter(id => id !== filterId)
+        ? prev.filter((id) => id !== filterId)
         : [...prev, filterId]
     );
   };
 
   const renderProperty = ({ item }: { item: Property }) => (
-    <Pressable onPress={() => router.push(`/(tabs)/property-details?id=${item.id}`)}>
+    <Pressable
+      onPress={() => router.push(`/(tabs)/property-details?id=${item.id}`)}
+    >
       <Card style={styles.propertyCard} variant="elevated">
         <View style={styles.propertyContent}>
           <Image source={{ uri: item.image }} style={styles.propertyImage} />
-          
+
           <View style={styles.propertyInfo}>
             <View style={styles.propertyHeader}>
               <View style={styles.propertyTitleContainer}>
@@ -141,26 +147,42 @@ export default function SearchScreen() {
                 }}
               >
                 <IconSymbol
-                  name={item.isFavorite ? 'heart.fill' : 'heart'}
+                  name={item.isFavorite ? "heart.fill" : "heart"}
                   size={20}
-                  color={item.isFavorite ? realEstateColors.error : realEstateColors.gray[400]}
+                  color={
+                    item.isFavorite
+                      ? realEstateColors.error
+                      : realEstateColors.gray[400]
+                  }
                 />
               </Pressable>
             </View>
-            
+
             <Text style={styles.propertyPrice}>{item.price}</Text>
-            
+
             <View style={styles.propertyDetails}>
               <View style={styles.detailItem}>
-                <IconSymbol name="bed.double" size={16} color={realEstateColors.gray[500]} />
+                <IconSymbol
+                  name="bed.double"
+                  size={16}
+                  color={realEstateColors.gray[500]}
+                />
                 <Text style={styles.detailText}>{item.bedrooms} beds</Text>
               </View>
               <View style={styles.detailItem}>
-                <IconSymbol name="drop" size={16} color={realEstateColors.gray[500]} />
+                <IconSymbol
+                  name="drop"
+                  size={16}
+                  color={realEstateColors.gray[500]}
+                />
                 <Text style={styles.detailText}>{item.bathrooms} baths</Text>
               </View>
               <View style={styles.detailItem}>
-                <IconSymbol name="square" size={16} color={realEstateColors.gray[500]} />
+                <IconSymbol
+                  name="square"
+                  size={16}
+                  color={realEstateColors.gray[500]}
+                />
                 <Text style={styles.detailText}>{item.area}</Text>
               </View>
             </View>
@@ -171,9 +193,9 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <SafeAreaView edges={["top"]} style={styles.container}>
       <Header title="Search Properties" />
-      
+
       <View style={styles.content}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
@@ -181,18 +203,26 @@ export default function SearchScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search by location, property type..."
+            placeholderTextColor={realEstateColors.gray[500]}
+            variant="light"
+            isFocused={isSearchFocused}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
             leftIcon={
               <IconSymbol
                 name="magnifyingglass"
-                size={20}
-                color={realEstateColors.gray[400]}
+                size={22}
+                color={realEstateColors.gray[600]}
               />
             }
             rightIcon={
-              <Pressable onPress={() => setShowFilters(!showFilters)}>
+              <Pressable
+                onPress={() => setShowFilters(!showFilters)}
+                style={styles.filterIconButton}
+              >
                 <IconSymbol
                   name="slider.horizontal.3"
-                  size={20}
+                  size={22}
                   color={realEstateColors.primary[600]}
                 />
               </Pressable>
@@ -211,7 +241,8 @@ export default function SearchScreen() {
                   key={filter.id}
                   style={[
                     styles.filterButton,
-                    selectedFilters.includes(filter.id) && styles.filterButtonActive,
+                    selectedFilters.includes(filter.id) &&
+                      styles.filterButtonActive,
                   ]}
                   onPress={() => toggleFilter(filter.id)}
                 >
@@ -227,7 +258,8 @@ export default function SearchScreen() {
                   <Text
                     style={[
                       styles.filterButtonText,
-                      selectedFilters.includes(filter.id) && styles.filterButtonTextActive,
+                      selectedFilters.includes(filter.id) &&
+                        styles.filterButtonTextActive,
                     ]}
                   >
                     {filter.label}
@@ -243,14 +275,16 @@ export default function SearchScreen() {
                   key={range.id}
                   style={[
                     styles.priceRangeButton,
-                    selectedFilters.includes(range.id) && styles.priceRangeButtonActive,
+                    selectedFilters.includes(range.id) &&
+                      styles.priceRangeButtonActive,
                   ]}
                   onPress={() => toggleFilter(range.id)}
                 >
                   <Text
                     style={[
                       styles.priceRangeText,
-                      selectedFilters.includes(range.id) && styles.priceRangeTextActive,
+                      selectedFilters.includes(range.id) &&
+                        styles.priceRangeTextActive,
                     ]}
                   >
                     {range.label}
@@ -317,25 +351,29 @@ const styles = StyleSheet.create({
   searchInput: {
     marginBottom: 0,
   },
+  filterIconButton: {
+    padding: spacing.xs,
+    marginRight: -spacing.xs,
+  },
   filtersCard: {
     marginBottom: spacing.md,
   },
   filtersTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: realEstateColors.gray[900],
     marginBottom: spacing.sm,
     marginTop: spacing.sm,
   },
   filterButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
   filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
@@ -348,14 +386,14 @@ const styles = StyleSheet.create({
   filterButtonText: {
     fontSize: 14,
     color: realEstateColors.gray[600],
-    fontWeight: '500',
+    fontWeight: "500",
   },
   filterButtonTextActive: {
     color: realEstateColors.white,
   },
   priceRanges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
@@ -374,32 +412,32 @@ const styles = StyleSheet.create({
   priceRangeText: {
     fontSize: 14,
     color: realEstateColors.gray[600],
-    fontWeight: '500',
+    fontWeight: "500",
   },
   priceRangeTextActive: {
     color: realEstateColors.white,
   },
   filterActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.sm,
   },
   filterActionButton: {
     flex: 1,
   },
   resultsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.md,
   },
   resultsCount: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: realEstateColors.gray[900],
   },
   sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.xs,
   },
   sortText: {
@@ -412,10 +450,10 @@ const styles = StyleSheet.create({
   propertyCard: {
     marginBottom: spacing.md,
     padding: 0,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   propertyContent: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   propertyImage: {
     width: 120,
@@ -428,9 +466,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   propertyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: spacing.xs,
   },
   propertyTitleContainer: {
@@ -438,7 +476,7 @@ const styles = StyleSheet.create({
   },
   propertyTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.gray[900],
     marginBottom: 2,
   },
@@ -451,17 +489,17 @@ const styles = StyleSheet.create({
   },
   propertyPrice: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: realEstateColors.primary[600],
     marginBottom: spacing.sm,
   },
   propertyDetails: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
   },
   detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.xs,
   },
   detailText: {

@@ -6,8 +6,8 @@ const API_CONFIG = {
     baseUrl: "http://192.168.1.4:5000/api",
   },
   production: {
-    // Update with your production API URL when deployed
-    baseUrl: "http://192.168.1.4:5000/api",
+    // Production API URL - deployed on Render
+    baseUrl: "https://global-property.onrender.com/api",
   },
 };
 

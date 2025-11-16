@@ -12,14 +12,9 @@ const app = express();
 // Connect to database
 connectDB();
 
-// CORS configuration to allow requests from Expo Go
+// CORS configuration to allow requests from anywhere
 const corsOptions = {
-  origin: [
-    "http://localhost:8081", // Expo default port
-    "http://192.168.1.6:8081", // Your specific Expo address
-    "exp://192.168.1.6:8081", // Expo protocol
-    "http://localhost:5000", // Backend itself for testing
-  ],
+  origin: "*", // Allow all origins
   credentials: true,
   optionsSuccessStatus: 200,
 };

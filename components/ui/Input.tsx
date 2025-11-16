@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   TextInput,
   View,
@@ -7,8 +7,13 @@ import {
   TextInputProps,
   ViewStyle,
   TextStyle,
-} from 'react-native';
-import { realEstateColors, spacing, borderRadius, shadows } from '@/constants/RealEstateColors';
+} from "react-native";
+import {
+  realEstateColors,
+  spacing,
+  borderRadius,
+  shadows,
+} from "@/constants/RealEstateColors";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -16,11 +21,13 @@ interface InputProps extends TextInputProps {
   required?: boolean; // Add required prop
   containerStyle?: ViewStyle;
   inputStyle?: TextStyle;
+  inputContainerStyle?: ViewStyle;
   labelStyle?: TextStyle;
   errorStyle?: TextStyle;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  variant?: 'light' | 'dark'; // Add variant prop
+  variant?: "light" | "dark"; // Add variant prop
+  isFocused?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -29,20 +36,37 @@ export const Input: React.FC<InputProps> = ({
   required,
   containerStyle,
   inputStyle,
+  inputContainerStyle,
   labelStyle,
   errorStyle,
   leftIcon,
   rightIcon,
-  variant = 'dark', // Default to dark
+  variant = "dark", // Default to dark
+  isFocused = false,
+  placeholderTextColor,
   ...props
 }) => {
   // Determine colors based on variant
-  const isLight = variant === 'light';
-  const textColor = isLight ? realEstateColors.gray[900] : realEstateColors.white;
-  const placeholderColor = isLight ? realEstateColors.gray[400] : realEstateColors.gray[300];
-  const backgroundColor = isLight ? realEstateColors.white : 'rgba(255, 255, 255, 0.1)';
-  const borderColor = isLight ? realEstateColors.gray[200] : 'rgba(255, 255, 255, 0.3)';
-  const labelColor = isLight ? realEstateColors.gray[700] : realEstateColors.white;
+  const isLight = variant === "light";
+  const textColor = isLight
+    ? realEstateColors.gray[900]
+    : realEstateColors.white;
+  const defaultPlaceholderColor = isLight
+    ? realEstateColors.gray[500]
+    : realEstateColors.gray[300];
+  const backgroundColor = isLight
+    ? realEstateColors.white
+    : "rgba(255, 255, 255, 0.1)";
+  const borderColor = isLight
+    ? isFocused
+      ? realEstateColors.primary[500]
+      : realEstateColors.gray[300]
+    : "rgba(255, 255, 255, 0.3)";
+  const labelColor = isLight
+    ? realEstateColors.gray[700]
+    : realEstateColors.white;
+
+  const finalPlaceholderColor = placeholderTextColor || defaultPlaceholderColor;
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -52,37 +76,30 @@ export const Input: React.FC<InputProps> = ({
           {required && <Text style={styles.required}> *</Text>}
         </Text>
       )}
-      <View style={[
-        styles.inputContainer,
-        { backgroundColor, borderColor },
-        error && styles.inputContainerError,
-        props.editable === false && styles.inputContainerDisabled
-      ]}>
-        {leftIcon && (
-          <View style={styles.iconContainer}>
-            {leftIcon}
-          </View>
-        )}
+      <View
+        style={[
+          styles.inputContainer,
+          { backgroundColor, borderColor },
+          error && styles.inputContainerError,
+          props.editable === false && styles.inputContainerDisabled,
+          inputContainerStyle,
+        ]}
+      >
+        {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
         <TextInput
           style={[
             styles.input,
             { color: textColor },
             leftIcon ? styles.inputWithLeftIcon : {},
             rightIcon ? styles.inputWithRightIcon : {},
-            inputStyle
+            inputStyle,
           ]}
-          placeholderTextColor={placeholderColor}
+          placeholderTextColor={finalPlaceholderColor}
           {...props}
         />
-        {rightIcon && (
-          <View style={styles.iconContainer}>
-            {rightIcon}
-          </View>
-        )}
+        {rightIcon && <View style={styles.iconContainer}>{rightIcon}</View>}
       </View>
-      {error && (
-        <Text style={[styles.error, errorStyle]}>{error}</Text>
-      )}
+      {error && <Text style={[styles.error, errorStyle]}>{error}</Text>}
     </View>
   );
 };
@@ -93,19 +110,20 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: spacing.xs,
   },
   required: {
     color: realEstateColors.error,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: borderRadius.lg,
-    minHeight: 56,
-    ...shadows.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderRadius: borderRadius.xl,
+    minHeight: 58,
+    paddingHorizontal: spacing.xs,
+    ...shadows.md,
   },
   inputContainerError: {
     borderColor: realEstateColors.error,
