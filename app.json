@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Natively",
+    "name": "Global Property",
     "slug": "Natively",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.Natively",
+      "bundleIdentifier": "com.globalproperty.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -25,7 +25,7 @@
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Natively",
+      "package": "com.globalproperty.app",
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
@@ -53,7 +53,7 @@
         }
       ]
     ],
-    "scheme": "natively",
+    "scheme": "globalproperty",
     "experiments": {
       "typedRoutes": true
     },
@@ -62,6 +62,7 @@
       "eas": {
         "projectId": "eb181f70-1cdd-4a50-9741-17292013a81a"
       }
-    }
+    },
+    "owner": "raunak456"
   }
 }
