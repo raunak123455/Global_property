@@ -332,36 +332,6 @@ export default function Appointments() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Appointments</Text>
-        <Text style={styles.subtitle}>Manage your schedule</Text>
-      </View>
-
-      <View style={styles.filterContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterScrollContent}
-        >
-          <FilterButton label="All" value="all" count={appointments.length} />
-          <FilterButton
-            label="Upcoming"
-            value="upcoming"
-            count={appointments.filter((a) => a.status === "upcoming").length}
-          />
-          <FilterButton
-            label="Completed"
-            value="completed"
-            count={appointments.filter((a) => a.status === "completed").length}
-          />
-          <FilterButton
-            label="Cancelled"
-            value="cancelled"
-            count={appointments.filter((a) => a.status === "cancelled").length}
-          />
-        </ScrollView>
-      </View>
-
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -373,6 +343,97 @@ export default function Appointments() {
           />
         }
       >
+        {/* Enhanced Header with Gradient */}
+        <LinearGradient
+          colors={[realEstateColors.blue[600], realEstateColors.blue[700]]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.headerGradient}
+        >
+          <View style={styles.headerContent}>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.title}>Appointments</Text>
+              <Text style={styles.subtitle}>
+                Manage your schedule and meetings
+              </Text>
+            </View>
+            <View style={styles.headerIconContainer}>
+              <Ionicons
+                name="calendar"
+                size={28}
+                color={realEstateColors.white}
+              />
+            </View>
+          </View>
+        </LinearGradient>
+
+        {/* Stats Summary */}
+        <View style={styles.statsBar}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{appointments.length}</Text>
+            <Text style={styles.statLabel}>Total</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text
+              style={[styles.statValue, { color: realEstateColors.blue[600] }]}
+            >
+              {appointments.filter((a) => a.status === "upcoming").length}
+            </Text>
+            <Text style={styles.statLabel}>Upcoming</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text
+              style={[styles.statValue, { color: realEstateColors.green[600] }]}
+            >
+              {appointments.filter((a) => a.status === "completed").length}
+            </Text>
+            <Text style={styles.statLabel}>Completed</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text
+              style={[styles.statValue, { color: realEstateColors.red[600] }]}
+            >
+              {appointments.filter((a) => a.status === "cancelled").length}
+            </Text>
+            <Text style={styles.statLabel}>Cancelled</Text>
+          </View>
+        </View>
+
+        {/* Filters Section */}
+        <View style={styles.filterContainer}>
+          <Text style={styles.filterTitle}>Filter Appointments</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScrollContent}
+          >
+            <FilterButton label="All" value="all" count={appointments.length} />
+            <FilterButton
+              label="Upcoming"
+              value="upcoming"
+              count={appointments.filter((a) => a.status === "upcoming").length}
+            />
+            <FilterButton
+              label="Completed"
+              value="completed"
+              count={
+                appointments.filter((a) => a.status === "completed").length
+              }
+            />
+            <FilterButton
+              label="Cancelled"
+              value="cancelled"
+              count={
+                appointments.filter((a) => a.status === "cancelled").length
+              }
+            />
+          </ScrollView>
+        </View>
+
+        {/* Appointments List */}
         {filteredAppointments.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons
@@ -418,45 +479,116 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: realEstateColors.gray[50],
   },
-  header: {
-    padding: spacing.lg,
-    backgroundColor: realEstateColors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: realEstateColors.gray[200],
+  // Enhanced Header Styles
+  headerGradient: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    overflow: "hidden",
+  },
+  headerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  headerTextContainer: {
+    flex: 1,
+    paddingRight: spacing.md,
+  },
+  headerIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: realEstateColors.gray[900],
+    fontSize: 26,
+    fontWeight: "800",
+    color: realEstateColors.white,
     marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 14,
-    color: realEstateColors.gray[600],
+    fontSize: 15,
+    color: "rgba(255, 255, 255, 0.95)",
+    fontWeight: "500",
   },
+  // Stats Bar
+  statsBar: {
+    flexDirection: "row",
+    backgroundColor: realEstateColors.white,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    alignItems: "center",
+    justifyContent: "space-around",
+    ...shadows.md,
+    borderBottomWidth: 1,
+    borderBottomColor: realEstateColors.gray[100],
+  },
+  statItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: realEstateColors.gray[900],
+    marginBottom: spacing.xs / 2,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: realEstateColors.gray[600],
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: realEstateColors.gray[200],
+  },
+  // Filter Section
   filterContainer: {
     backgroundColor: realEstateColors.white,
     paddingVertical: spacing.md,
+    paddingTop: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: realEstateColors.gray[200],
+  },
+  filterTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: realEstateColors.gray[900],
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   filterScrollContent: {
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
   },
   filterButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 20,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
+    borderRadius: 24,
     backgroundColor: realEstateColors.gray[100],
+    borderWidth: 2,
+    borderColor: "transparent",
+    minWidth: 85,
+    alignItems: "center",
   },
   filterButtonActive: {
-    backgroundColor: realEstateColors.primary[600],
+    backgroundColor: realEstateColors.blue[600],
+    borderColor: realEstateColors.blue[700],
+    ...shadows.sm,
   },
   filterButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "700",
     color: realEstateColors.gray[700],
+    letterSpacing: 0.3,
   },
   filterButtonTextActive: {
     color: realEstateColors.white,

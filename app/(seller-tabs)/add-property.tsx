@@ -8,6 +8,7 @@ import {
   Pressable,
   Alert,
   Image,
+  Switch,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -42,9 +43,11 @@ export default function AddProperty() {
     propertyType: "house",
     yearBuilt: "",
     features: "",
+    isTokenized: false,
+    totalTokens: "",
   });
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -120,6 +123,18 @@ export default function AddProperty() {
       return;
     }
 
+    // Validate tokenization
+    if (formData.isTokenized) {
+      const totalTokens = parseInt(formData.totalTokens);
+      if (!formData.totalTokens || isNaN(totalTokens) || totalTokens < 1) {
+        Alert.alert(
+          "Invalid Input",
+          "Please enter a valid number of tokens (must be at least 1)."
+        );
+        return;
+      }
+    }
+
     // Check user authentication
     if (!user?.token) {
       Alert.alert(
@@ -162,6 +177,10 @@ export default function AddProperty() {
               .filter((f) => f.length > 0)
           : [],
         status: "active", // Default status for new properties
+        isTokenized: formData.isTokenized,
+        totalTokens: formData.isTokenized && formData.totalTokens
+          ? parseInt(formData.totalTokens)
+          : undefined,
       };
 
       console.log("Creating property with data:", propertyData);
@@ -611,6 +630,72 @@ export default function AddProperty() {
           />
         </View>
 
+        {/* Tokenization Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <MaterialIcons
+              name="account-balance-wallet"
+              size={24}
+              color={realEstateColors.primary[600]}
+            />
+            <Text style={styles.sectionTitle}>Tokenization</Text>
+          </View>
+
+          <View style={styles.tokenizationRow}>
+            <View style={styles.tokenizationLabelContainer}>
+              <Text style={styles.tokenizationLabel}>
+                Tokenize this property
+              </Text>
+              <Text style={styles.tokenizationSubtext}>
+                Divide property into tokens for fractional ownership
+              </Text>
+            </View>
+            <Switch
+              value={formData.isTokenized}
+              onValueChange={(value) => updateFormData("isTokenized", value)}
+              trackColor={{
+                false: realEstateColors.gray[300],
+                true: realEstateColors.primary[200],
+              }}
+              thumbColor={
+                formData.isTokenized
+                  ? realEstateColors.primary[600]
+                  : realEstateColors.gray[400]
+              }
+            />
+          </View>
+
+          {formData.isTokenized && (
+            <View style={styles.tokenInputContainer}>
+              <Input
+                label="Total Tokens"
+                value={formData.totalTokens}
+                onChangeText={(value) => updateFormData("totalTokens", value)}
+                placeholder="e.g., 1000"
+                keyboardType="numeric"
+                variant="light"
+                required
+                leftIcon={
+                  <MaterialIcons
+                    name="token"
+                    size={18}
+                    color={realEstateColors.gray[500]}
+                  />
+                }
+              />
+              {formData.price && formData.totalTokens && !isNaN(parseFloat(formData.price)) && !isNaN(parseInt(formData.totalTokens)) && (
+                <View style={styles.tokenInfo}>
+                  <Text style={styles.tokenInfoText}>
+                    Price per token: ${(
+                      parseFloat(formData.price) / parseInt(formData.totalTokens)
+                    ).toFixed(2)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+
         {/* Add Property Button */}
         <GradientButton
           title={loading ? "Adding Property..." : "Add Property"}
@@ -780,5 +865,44 @@ const styles = StyleSheet.create({
   addButton: {
     marginTop: spacing.xl,
     marginBottom: spacing.lg,
+  },
+  // Tokenization Styles
+  tokenizationRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  tokenizationLabelContainer: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  tokenizationLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: realEstateColors.gray[900],
+    marginBottom: spacing.xs,
+  },
+  tokenizationSubtext: {
+    fontSize: 13,
+    color: realEstateColors.gray[600],
+  },
+  tokenInputContainer: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: realEstateColors.gray[200],
+  },
+  tokenInfo: {
+    marginTop: spacing.sm,
+    padding: spacing.sm,
+    backgroundColor: realEstateColors.primary[50],
+    borderRadius: borderRadius.md,
+  },
+  tokenInfoText: {
+    fontSize: 14,
+    color: realEstateColors.primary[700],
+    fontWeight: "600",
   },
 });

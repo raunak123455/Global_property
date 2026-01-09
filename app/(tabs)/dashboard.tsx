@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,10 @@ import {
   Pressable,
   Image,
   FlatList,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
+import { LinearGradient as ExpoLinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useRouter } from "expo-router";
 import { Card } from "@/components/ui/Card";
@@ -21,20 +24,10 @@ import {
 import { useUser } from "@/contexts/UserContext";
 import { KycWarningBanner } from "@/components/KycWarningBanner";
 import { useKycReminder } from "@/hooks/useKycReminder";
+import { propertyAPI } from "@/utils/api";
+import { transformProperties, FrontendProperty } from "@/utils/propertyUtils";
 
-interface Property {
-  id: string;
-  title: string;
-  price: string;
-  location: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  image: string;
-  isFavorite: boolean;
-}
-
-const mockProperties: Property[] = [
+const mockProperties: FrontendProperty[] = [
   {
     id: "1",
     title: "Modern Villa",
@@ -45,6 +38,7 @@ const mockProperties: Property[] = [
     area: "2,500 sq ft",
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400",
     isFavorite: false,
+    type: "Villa",
   },
   {
     id: "2",
@@ -56,6 +50,7 @@ const mockProperties: Property[] = [
     area: "1,800 sq ft",
     image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400",
     isFavorite: true,
+    type: "Apartment",
   },
   {
     id: "3",
@@ -67,36 +62,94 @@ const mockProperties: Property[] = [
     area: "1,600 sq ft",
     image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=400",
     isFavorite: false,
+    type: "House",
+  },
+  {
+    id: "4",
+    title: "Downtown Condo",
+    price: "$520,000",
+    location: "Seattle, WA",
+    bedrooms: 2,
+    bathrooms: 1,
+    area: "1,200 sq ft",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400",
+    isFavorite: false,
+    type: "Condo",
   },
 ];
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { user, isLoading } = useUser();
-  const [properties, setProperties] = useState(mockProperties);
+  const { user, isLoading: userLoading } = useUser();
+  const [backendProperties, setBackendProperties] = useState<FrontendProperty[]>([]);
+  const [propertiesLoading, setPropertiesLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const { showReminder, dismissReminder } = useKycReminder();
 
   const categories = ["All", "House", "Apartment", "Villa", "Condo"];
 
+  // Combine mock properties with backend properties
+  const allProperties = [...mockProperties, ...backendProperties];
+
   // Redirect to login if not authenticated
-  React.useEffect(() => {
-    if (!isLoading && !user) {
+  useEffect(() => {
+    if (!userLoading && !user) {
       router.replace("/(auth)/login");
     }
-  }, [isLoading, user]);
+  }, [userLoading, user]);
+
+  // Fetch properties from backend
+  useEffect(() => {
+    const fetchProperties = async () => {
+      if (!user?.token) {
+        setPropertiesLoading(false);
+        return;
+      }
+
+      try {
+        setPropertiesLoading(true);
+        const response = await propertyAPI.getAllProperties(user.token, {
+          limit: 100, // Fetch more properties for featured section
+        });
+
+        if (response && response.properties) {
+          const transformedProperties = transformProperties(
+            response.properties,
+            user._id
+          );
+          setBackendProperties(transformedProperties);
+        } else {
+          setBackendProperties([]);
+        }
+      } catch (error: any) {
+        console.error("Error fetching properties:", error);
+        // Don't show alert for network errors, just log and use empty array
+        setBackendProperties([]);
+      } finally {
+        setPropertiesLoading(false);
+      }
+    };
+
+    if (user?.token) {
+      fetchProperties();
+    }
+  }, [user?.token, user?._id]);
+
+  // Filter properties based on selected category
+  const filteredProperties =
+    selectedCategory === "All"
+      ? allProperties
+      : allProperties.filter(
+          (property) =>
+            property.type.toLowerCase() === selectedCategory.toLowerCase()
+        );
 
   const toggleFavorite = (propertyId: string) => {
-    setProperties((prev) =>
-      prev.map((property) =>
-        property.id === propertyId
-          ? { ...property, isFavorite: !property.isFavorite }
-          : property
-      )
-    );
+    // Note: In a real app, this would update the backend
+    // For now, we'll just show the visual feedback
   };
 
-  const renderProperty = ({ item }: { item: Property }) => (
+  const renderProperty = ({ item }: { item: FrontendProperty }) => (
     <Pressable
       onPress={() => router.push(`/(tabs)/property-details?id=${item.id}`)}
     >
@@ -236,7 +289,10 @@ export default function DashboardScreen() {
                   styles.categoryButton,
                   selectedCategory === category && styles.categoryButtonActive,
                 ]}
-                onPress={() => setSelectedCategory(category)}
+                onPress={() => {
+                  console.log("Category selected:", category);
+                  setSelectedCategory(category);
+                }}
               >
                 <Text
                   style={[
@@ -254,51 +310,184 @@ export default function DashboardScreen() {
         {/* Featured Properties */}
         <View style={styles.propertiesContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Featured Properties</Text>
+            <View>
+              <Text style={styles.featuredTitle}>Featured Properties</Text>
+              {selectedCategory !== "All" && (
+                <Text style={styles.categoryIndicator}>
+                  Showing: {selectedCategory}
+                </Text>
+              )}
+            </View>
             <Pressable onPress={() => router.push("/(tabs)/search")}>
               <Text style={styles.seeAllText}>See All</Text>
             </Pressable>
           </View>
 
-          <FlatList
-            data={properties}
-            renderItem={renderProperty}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.propertiesList}
-          />
+          {propertiesLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator
+                size="large"
+                color={realEstateColors.primary[600]}
+              />
+              <Text style={styles.loadingText}>Loading properties...</Text>
+            </View>
+          ) : filteredProperties.length > 0 ? (
+            <FlatList
+              data={filteredProperties}
+              renderItem={renderProperty}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.propertiesList}
+              snapToInterval={300 + spacing.md}
+              decelerationRate="fast"
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyStateIcon}>
+                <IconSymbol
+                  name="house"
+                  size={48}
+                  color={realEstateColors.gray[400]}
+                />
+              </View>
+              <Text style={styles.emptyStateText}>
+                No {selectedCategory.toLowerCase()} properties found
+              </Text>
+              <Text style={styles.emptyStateSubtext}>
+                Try selecting a different category
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Quick Actions */}
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionsGrid}>
-            <CustomButton
-              title="Buy Property"
-              onPress={() => console.log("Buy property")}
-              style={styles.actionButton}
-              leftIcon={
-                <IconSymbol
-                  name="house"
-                  size={20}
-                  color={realEstateColors.white}
-                />
-              }
-            />
-            <CustomButton
-              title="Rent Property"
-              onPress={() => console.log("Rent property")}
-              variant="outline"
-              style={styles.actionButton}
-              leftIcon={
-                <IconSymbol
-                  name="key"
-                  size={20}
-                  color={realEstateColors.primary[600]}
-                />
-              }
-            />
+            {/* Buy Property */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionCard,
+                pressed && styles.actionCardPressed,
+              ]}
+              onPress={() => router.push("/(tabs)/search")}
+            >
+              <ExpoLinearGradient
+                colors={[
+                  realEstateColors.primary[600],
+                  realEstateColors.primary[700],
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionIconContainer}>
+                  <IconSymbol
+                    name="house.fill"
+                    size={28}
+                    color={realEstateColors.white}
+                  />
+                </View>
+                <Text style={styles.actionTitle}>Buy Property</Text>
+                <Text style={styles.actionDescription}>
+                  Explore properties for sale
+                </Text>
+              </ExpoLinearGradient>
+            </Pressable>
+
+            {/* Rent Property */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionCard,
+                pressed && styles.actionCardPressed,
+              ]}
+              onPress={() => router.push("/(tabs)/search")}
+            >
+              <ExpoLinearGradient
+                colors={[
+                  realEstateColors.blue[600],
+                  realEstateColors.blue[700],
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionIconContainer}>
+                  <IconSymbol
+                    name="doc.text.fill"
+                    size={28}
+                    color={realEstateColors.white}
+                  />
+                </View>
+                <Text style={styles.actionTitle}>Rent Property</Text>
+                <Text style={styles.actionDescription}>
+                  Find rental properties
+                </Text>
+              </ExpoLinearGradient>
+            </Pressable>
+
+            {/* Mortgage Calculator */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionCard,
+                pressed && styles.actionCardPressed,
+              ]}
+              onPress={() => router.push("/mortgage-calculator")}
+            >
+              <ExpoLinearGradient
+                colors={[
+                  realEstateColors.purple[600],
+                  realEstateColors.purple[700],
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionIconContainer}>
+                  <IconSymbol
+                    name="dollarsign.circle.fill"
+                    size={28}
+                    color={realEstateColors.white}
+                  />
+                </View>
+                <Text style={styles.actionTitle}>Calculator</Text>
+                <Text style={styles.actionDescription}>
+                  Estimate mortgage payments
+                </Text>
+              </ExpoLinearGradient>
+            </Pressable>
+
+            {/* Partner Banks */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionCard,
+                pressed && styles.actionCardPressed,
+              ]}
+              onPress={() => router.push("/partner-banks")}
+            >
+              <ExpoLinearGradient
+                colors={[
+                  realEstateColors.green[600],
+                  realEstateColors.green[700],
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <View style={styles.actionIconContainer}>
+                  <IconSymbol
+                    name="creditcard.fill"
+                    size={28}
+                    color={realEstateColors.white}
+                  />
+                </View>
+                <Text style={styles.actionTitle}>Partner Banks</Text>
+                <Text style={styles.actionDescription}>
+                  Explore financing options
+                </Text>
+              </ExpoLinearGradient>
+            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -381,30 +570,39 @@ const styles = StyleSheet.create({
     color: realEstateColors.gray[900],
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
+    textAlign: "left",
   },
   categories: {
     paddingHorizontal: spacing.lg,
     gap: spacing.sm,
   },
   categoryButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
     backgroundColor: realEstateColors.white,
-    borderWidth: 1,
-    borderColor: realEstateColors.gray[200],
+    borderWidth: 1.5,
+    borderColor: realEstateColors.gray[300],
+    minWidth: 90,
+    alignItems: "center",
   },
   categoryButtonActive: {
     backgroundColor: realEstateColors.primary[600],
     borderColor: realEstateColors.primary[600],
+    shadowColor: realEstateColors.primary[600],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   categoryText: {
-    fontSize: 14,
-    color: realEstateColors.gray[600],
-    fontWeight: "500",
+    fontSize: 15,
+    color: realEstateColors.gray[700],
+    fontWeight: "600",
   },
   categoryTextActive: {
     color: realEstateColors.white,
+    fontWeight: "700",
   },
   propertiesContainer: {
     marginBottom: spacing.lg,
@@ -412,32 +610,46 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
+  },
+  featuredTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: realEstateColors.gray[900],
+    textAlign: "left",
+  },
+  categoryIndicator: {
+    fontSize: 13,
+    color: realEstateColors.primary[600],
+    fontWeight: "500",
+    marginTop: spacing.xs,
+    textAlign: "left",
   },
   seeAllText: {
     fontSize: 14,
     color: realEstateColors.primary[600],
-    fontWeight: "500",
+    fontWeight: "600",
+    marginTop: spacing.xs,
   },
   propertiesList: {
-    paddingHorizontal: spacing.lg,
+    paddingLeft: spacing.lg,
     gap: spacing.md,
   },
   propertyCard: {
-    width: 280,
+    width: 300,
     padding: 0,
     overflow: "hidden",
+    marginRight: spacing.md,
   },
   imageContainer: {
     position: "relative",
   },
   propertyImage: {
     width: "100%",
-    height: 180,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
+    height: 200,
+    resizeMode: "cover",
   },
   favoriteButton: {
     position: "absolute",
@@ -483,15 +695,98 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: realEstateColors.gray[600],
   },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.xxl * 1.5,
+    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: 14,
+    color: realEstateColors.gray[600],
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.xxl * 1.5,
+    paddingHorizontal: spacing.lg,
+    marginHorizontal: spacing.lg,
+    backgroundColor: realEstateColors.white,
+    borderRadius: borderRadius.xl,
+    borderWidth: 2,
+    borderColor: realEstateColors.gray[200],
+    borderStyle: "dashed",
+  },
+  emptyStateIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: realEstateColors.gray[100],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyStateText: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: realEstateColors.gray[800],
+    marginTop: spacing.lg,
+    textAlign: "center",
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: realEstateColors.gray[500],
+    marginTop: spacing.sm,
+    textAlign: "center",
+  },
   quickActions: {
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.xl,
   },
   actionsGrid: {
     flexDirection: "row",
-    gap: spacing.md,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
-  actionButton: {
-    flex: 1,
+  actionCard: {
+    width: "48%",
+    marginBottom: spacing.md,
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  actionCardPressed: {
+    transform: [{ scale: 0.97 }],
+    opacity: 0.9,
+  },
+  actionGradient: {
+    padding: spacing.lg,
+    minHeight: 140,
+    justifyContent: "space-between",
+  },
+  actionIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.sm,
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: realEstateColors.white,
+    marginBottom: spacing.xs,
+  },
+  actionDescription: {
+    fontSize: 12,
+    color: "rgba(255, 255, 255, 0.85)",
+    lineHeight: 16,
   },
 });

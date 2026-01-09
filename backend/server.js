@@ -35,6 +35,16 @@ app.get("/", (req, res) => {
   res.json({ message: "Real Estate Backend API is running!" });
 });
 
+// Dedicated ping endpoint for cron jobs to keep server active
+app.get("/api/ping", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "Server is active",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

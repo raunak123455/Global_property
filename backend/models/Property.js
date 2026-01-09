@@ -156,6 +156,21 @@ const propertySchema = new mongoose.Schema(
       verifiedAt: Date,
       notes: String,
     },
+    // Tokenization fields
+    isTokenized: {
+      type: Boolean,
+      default: false,
+    },
+    totalTokens: {
+      type: Number,
+      min: 1,
+      default: null,
+    },
+    tokensSold: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,
@@ -176,6 +191,14 @@ propertySchema.virtual("propertyAge").get(function () {
 propertySchema.virtual("pricePerSqFt").get(function () {
   if (this.area && this.area > 0) {
     return Math.round(this.price / this.area);
+  }
+  return null;
+});
+
+// Virtual for getting price per token (if tokenized)
+propertySchema.virtual("tokenPrice").get(function () {
+  if (this.isTokenized && this.totalTokens && this.totalTokens > 0) {
+    return Math.round((this.price / this.totalTokens) * 100) / 100; // Round to 2 decimal places
   }
   return null;
 });

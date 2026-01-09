@@ -1,5 +1,6 @@
-import { useColorScheme } from "react-native";
+import { useColorScheme, Platform } from "react-native";
 import { SystemBars } from "react-native-edge-to-edge";
+import * as NavigationBar from "expo-navigation-bar";
 import {
   DarkTheme,
   DefaultTheme,
@@ -32,6 +33,14 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  // Set navigation bar to light background with dark buttons on Android
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync("#ffffff");
+      NavigationBar.setButtonStyleAsync("dark");
+    }
+  }, []);
+
   if (!loaded) {
     return null;
   }
@@ -42,7 +51,7 @@ export default function RootLayout() {
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          <SystemBars style="auto" />
+          <SystemBars style="dark" />
           <Stack>
             <Stack.Screen name="(index)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -104,7 +113,7 @@ export default function RootLayout() {
               }}
             />
           </Stack>
-          <StatusBar style="auto" />
+          <StatusBar style="dark" />
         </ThemeProvider>
       </UserProvider>
     </GestureHandlerRootView>

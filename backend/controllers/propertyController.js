@@ -17,6 +17,8 @@ const createProperty = async (req, res) => {
       features,
       yearBuilt,
       status,
+      isTokenized,
+      totalTokens,
     } = req.body;
 
     const sellerId = req.user._id;
@@ -25,6 +27,13 @@ const createProperty = async (req, res) => {
     if (req.user.role !== "seller" && req.user.role !== "agent") {
       return res.status(403).json({
         message: "Only sellers and agents can create properties",
+      });
+    }
+
+    // Validate tokenization data
+    if (isTokenized && (!totalTokens || totalTokens < 1)) {
+      return res.status(400).json({
+        message: "If property is tokenized, totalTokens must be provided and greater than 0",
       });
     }
 
@@ -45,6 +54,9 @@ const createProperty = async (req, res) => {
       yearBuilt,
       status: status || "active",
       sellerId,
+      isTokenized: isTokenized || false,
+      totalTokens: isTokenized ? totalTokens : null,
+      tokensSold: 0,
     });
 
     // Populate seller information
@@ -215,9 +227,22 @@ const getPropertyStats = async (req, res) => {
 const getProperty = async (req, res) => {
   try {
     const { id } = req.params;
-    const sellerId = req.user._id;
+    const userId = req.user._id;
+    const userRole = req.user.role;
 
-    const property = await Property.findOne({ _id: id, sellerId }).populate(
+    // Build query based on user role
+    let query = { _id: id };
+
+    // Sellers and agents can only view their own properties
+    // Buyers and other roles can view any active property
+    if (userRole === "seller" || userRole === "agent") {
+      query.sellerId = userId;
+    } else {
+      // For buyers and other roles, only show active properties
+      query.status = "active";
+    }
+
+    const property = await Property.findOne(query).populate(
       "sellerId",
       "firstName lastName email phone"
     );

@@ -53,15 +53,15 @@ export const Input: React.FC<InputProps> = ({
     : realEstateColors.white;
   const defaultPlaceholderColor = isLight
     ? realEstateColors.gray[500]
-    : realEstateColors.gray[300];
+    : "rgba(255, 255, 255, 0.6)";
   const backgroundColor = isLight
     ? realEstateColors.white
-    : "rgba(255, 255, 255, 0.1)";
+    : "rgba(255, 255, 255, 0.15)";
   const borderColor = isLight
     ? isFocused
       ? realEstateColors.primary[500]
       : realEstateColors.gray[300]
-    : "rgba(255, 255, 255, 0.3)";
+    : "rgba(255, 255, 255, 0.4)";
   const labelColor = isLight
     ? realEstateColors.gray[700]
     : realEstateColors.white;
@@ -121,9 +121,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1.5,
     borderRadius: borderRadius.xl,
-    minHeight: 58,
-    paddingHorizontal: spacing.xs,
-    ...shadows.md,
+    minHeight: 56,
+    paddingHorizontal: spacing.md,
+    backdropFilter: "blur(10px)",
   },
   inputContainerError: {
     borderColor: realEstateColors.error,

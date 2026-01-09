@@ -3,7 +3,7 @@ const API_CONFIG = {
   development: {
     // Use your computer's IP address here
     // This should match the network your phone and computer are on
-    baseUrl: "http://192.168.1.4:5000/api",
+    baseUrl: "http://192.168.1.9:5000/api",
   },
   production: {
     // Production API URL - deployed on Render

@@ -178,151 +178,213 @@ export default function EditProperty() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <IconSymbol
-            name="chevron.left"
-            size={24}
-            color={realEstateColors.gray[900]}
-          />
+          <View style={styles.iconButton}>
+            <IconSymbol
+              name="chevron.left"
+              size={20}
+              color={realEstateColors.gray[700]}
+            />
+          </View>
         </Pressable>
-        <Text style={styles.title}>Edit Property</Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Edit Property</Text>
+          <Text style={styles.subtitle}>Update your listing details</Text>
+        </View>
         <Pressable style={styles.deleteButton} onPress={handleDeleteProperty}>
-          <IconSymbol
-            name="trash"
-            size={24}
-            color={realEstateColors.red[600]}
-          />
+          <View style={[styles.iconButton, styles.deleteIconButton]}>
+            <IconSymbol
+              name="trash"
+              size={20}
+              color={realEstateColors.red[600]}
+            />
+          </View>
         </Pressable>
       </View>
 
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.form}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Basic Information</Text>
-
-            <Input
-              label="Property Title"
-              value={formData.title}
-              onChangeText={(value) => updateFormData("title", value)}
-              placeholder="e.g., Beautiful 3BR House"
-              inputStyle={styles.input}
-            />
-
-            <Input
-              label="Description"
-              value={formData.description}
-              onChangeText={(value) => updateFormData("description", value)}
-              placeholder="Describe your property..."
-              multiline
-              numberOfLines={4}
-              inputStyle={[styles.input, styles.textArea]}
-            />
-
-            <Input
-              label="Price ($)"
-              value={formData.price}
-              onChangeText={(value) => updateFormData("price", value)}
-              placeholder="500000"
-              keyboardType="numeric"
-              inputStyle={styles.input}
-            />
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Location</Text>
-
-            <Input
-              label="Address"
-              value={formData.address}
-              onChangeText={(value) => updateFormData("address", value)}
-              placeholder="123 Main Street"
-              inputStyle={styles.input}
-            />
-
-            <View style={styles.row}>
-              <View style={styles.halfInput}>
-                <Input
-                  label="City"
-                  value={formData.city}
-                  onChangeText={(value) => updateFormData("city", value)}
-                  placeholder="New York"
-                  inputStyle={styles.input}
+          {/* Basic Information Card */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconCircle}>
+                <IconSymbol
+                  name="doc.text"
+                  size={20}
+                  color={realEstateColors.primary[600]}
                 />
               </View>
-              <View style={styles.halfInput}>
-                <Input
-                  label="State"
-                  value={formData.state}
-                  onChangeText={(value) => updateFormData("state", value)}
-                  placeholder="NY"
-                  inputStyle={styles.input}
-                />
-              </View>
+              <Text style={styles.sectionTitle}>Basic Information</Text>
             </View>
 
-            <Input
-              label="ZIP Code"
-              value={formData.zipCode}
-              onChangeText={(value) => updateFormData("zipCode", value)}
-              placeholder="10001"
-              keyboardType="numeric"
-              inputStyle={styles.input}
-            />
+            <View style={styles.cardContent}>
+              <Input
+                label="Property Title"
+                value={formData.title}
+                onChangeText={(value) => updateFormData("title", value)}
+                placeholder="e.g., Beautiful 3BR House"
+                containerStyle={styles.inputContainer}
+                variant="light"
+              />
+
+              <Input
+                label="Description"
+                value={formData.description}
+                onChangeText={(value) => updateFormData("description", value)}
+                placeholder="Describe your property..."
+                multiline
+                numberOfLines={4}
+                inputStyle={styles.textArea}
+                containerStyle={styles.inputContainer}
+                variant="light"
+              />
+
+              <Input
+                label="Price ($)"
+                value={formData.price}
+                onChangeText={(value) => updateFormData("price", value)}
+                placeholder="500000"
+                keyboardType="numeric"
+                containerStyle={styles.inputContainer}
+                variant="light"
+              />
+            </View>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Property Details</Text>
-
-            <View style={styles.row}>
-              <View style={styles.halfInput}>
-                <Input
-                  label="Bedrooms"
-                  value={formData.bedrooms}
-                  onChangeText={(value) => updateFormData("bedrooms", value)}
-                  placeholder="3"
-                  keyboardType="numeric"
-                  inputStyle={styles.input}
+          {/* Location Card */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconCircle}>
+                <IconSymbol
+                  name="location"
+                  size={20}
+                  color={realEstateColors.primary[600]}
                 />
               </View>
-              <View style={styles.halfInput}>
-                <Input
-                  label="Bathrooms"
-                  value={formData.bathrooms}
-                  onChangeText={(value) => updateFormData("bathrooms", value)}
-                  placeholder="2"
-                  keyboardType="numeric"
-                  inputStyle={styles.input}
-                />
-              </View>
+              <Text style={styles.sectionTitle}>Location</Text>
             </View>
 
-            <Input
-              label="Area (sq ft)"
-              value={formData.area}
-              onChangeText={(value) => updateFormData("area", value)}
-              placeholder="1500"
-              keyboardType="numeric"
-              inputStyle={styles.input}
-            />
+            <View style={styles.cardContent}>
+              <Input
+                label="Address"
+                value={formData.address}
+                onChangeText={(value) => updateFormData("address", value)}
+                placeholder="123 Main Street"
+                containerStyle={styles.inputContainer}
+                variant="light"
+              />
 
-            <Input
-              label="Year Built"
-              value={formData.yearBuilt}
-              onChangeText={(value) => updateFormData("yearBuilt", value)}
-              placeholder="2020"
-              keyboardType="numeric"
-              inputStyle={styles.input}
-            />
+              <View style={styles.row}>
+                <View style={styles.halfInput}>
+                  <Input
+                    label="City"
+                    value={formData.city}
+                    onChangeText={(value) => updateFormData("city", value)}
+                    placeholder="New York"
+                    containerStyle={styles.inputContainer}
+                    variant="light"
+                  />
+                </View>
+                <View style={styles.halfInput}>
+                  <Input
+                    label="State"
+                    value={formData.state}
+                    onChangeText={(value) => updateFormData("state", value)}
+                    placeholder="NY"
+                    containerStyle={styles.inputContainer}
+                    variant="light"
+                  />
+                </View>
+              </View>
 
-            <Input
-              label="Features (comma separated)"
-              value={formData.features}
-              onChangeText={(value) => updateFormData("features", value)}
-              placeholder="Pool, Garage, Garden"
-              inputStyle={styles.input}
-            />
+              <Input
+                label="ZIP Code"
+                value={formData.zipCode}
+                onChangeText={(value) => updateFormData("zipCode", value)}
+                placeholder="10001"
+                keyboardType="numeric"
+                containerStyle={styles.inputContainer}
+                variant="light"
+              />
+            </View>
+          </View>
+
+          {/* Property Details Card */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.iconCircle}>
+                <IconSymbol
+                  name="house.fill"
+                  size={20}
+                  color={realEstateColors.primary[600]}
+                />
+              </View>
+              <Text style={styles.sectionTitle}>Property Details</Text>
+            </View>
+
+            <View style={styles.cardContent}>
+              <View style={styles.row}>
+                <View style={styles.halfInput}>
+                  <Input
+                    label="Bedrooms"
+                    value={formData.bedrooms}
+                    onChangeText={(value) => updateFormData("bedrooms", value)}
+                    placeholder="3"
+                    keyboardType="numeric"
+                    containerStyle={styles.inputContainer}
+                    variant="light"
+                  />
+                </View>
+                <View style={styles.halfInput}>
+                  <Input
+                    label="Bathrooms"
+                    value={formData.bathrooms}
+                    onChangeText={(value) => updateFormData("bathrooms", value)}
+                    placeholder="2"
+                    keyboardType="numeric"
+                    containerStyle={styles.inputContainer}
+                    variant="light"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.halfInput}>
+                  <Input
+                    label="Area (sq ft)"
+                    value={formData.area}
+                    onChangeText={(value) => updateFormData("area", value)}
+                    placeholder="1500"
+                    keyboardType="numeric"
+                    containerStyle={styles.inputContainer}
+                    variant="light"
+                  />
+                </View>
+                <View style={styles.halfInput}>
+                  <Input
+                    label="Year Built"
+                    value={formData.yearBuilt}
+                    onChangeText={(value) => updateFormData("yearBuilt", value)}
+                    placeholder="2020"
+                    keyboardType="numeric"
+                    containerStyle={styles.inputContainer}
+                    variant="light"
+                  />
+                </View>
+              </View>
+
+              <Input
+                label="Features (comma separated)"
+                value={formData.features}
+                onChangeText={(value) => updateFormData("features", value)}
+                placeholder="Pool, Garage, Garden, Fireplace"
+                containerStyle={styles.inputContainer}
+                variant="light"
+              />
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -342,7 +404,7 @@ export default function EditProperty() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: realEstateColors.gray[50],
+    backgroundColor: realEstateColors.gray[100],
   },
   loadingContainer: {
     flex: 1,
@@ -357,39 +419,96 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     backgroundColor: realEstateColors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: realEstateColors.gray[200],
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  headerContent: {
+    flex: 1,
+    alignItems: "center",
+    marginHorizontal: spacing.md,
   },
   backButton: {
-    padding: spacing.sm,
+    width: 40,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: realEstateColors.gray[100],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteButton: {
+    width: 40,
+  },
+  deleteIconButton: {
+    backgroundColor: realEstateColors.red[50],
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: realEstateColors.gray[900],
+    letterSpacing: 0.3,
   },
-  deleteButton: {
-    padding: spacing.sm,
+  subtitle: {
+    fontSize: 13,
+    color: realEstateColors.gray[500],
+    marginTop: 2,
   },
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: spacing.xl,
+  },
   form: {
     padding: spacing.lg,
+    gap: spacing.lg,
   },
-  section: {
-    marginBottom: spacing.xl,
+  card: {
+    backgroundColor: realEstateColors.white,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    gap: spacing.md,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: realEstateColors.primary[50],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "700",
     color: realEstateColors.gray[900],
-    marginBottom: spacing.md,
+    letterSpacing: 0.3,
   },
-  input: {
-    marginBottom: spacing.md,
+  inputContainer: {
+    marginBottom: spacing.sm,
   },
   textArea: {
     height: 100,
@@ -405,10 +524,13 @@ const styles = StyleSheet.create({
   footer: {
     padding: spacing.lg,
     backgroundColor: realEstateColors.white,
-    borderTopWidth: 1,
-    borderTopColor: realEstateColors.gray[200],
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 8,
   },
   updateButton: {
-    marginBottom: spacing.sm,
+    marginBottom: 0,
   },
 });

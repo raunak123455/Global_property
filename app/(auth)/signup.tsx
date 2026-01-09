@@ -145,6 +145,7 @@ export default function SignupScreen() {
                   value={formData.firstName}
                   onChangeText={(value) => updateFormData("firstName", value)}
                   placeholder="First name"
+                  placeholderTextColor="rgba(255, 255, 255, 0.85)"
                   containerStyle={styles.nameInput}
                   inputStyle={styles.input}
                 />
@@ -153,6 +154,7 @@ export default function SignupScreen() {
                   value={formData.lastName}
                   onChangeText={(value) => updateFormData("lastName", value)}
                   placeholder="Last name"
+                  placeholderTextColor="rgba(255, 255, 255, 0.85)"
                   containerStyle={styles.nameInput}
                   inputStyle={styles.input}
                 />
@@ -175,7 +177,7 @@ export default function SignupScreen() {
                   <IconSymbol
                     name={isRoleSelectorOpen ? "chevron.up" : "chevron.down"}
                     size={20}
-                    color={realEstateColors.gray[300]}
+                    color="rgba(255, 255, 255, 0.9)"
                   />
                 </Pressable>
 
@@ -210,6 +212,7 @@ export default function SignupScreen() {
                 value={formData.email}
                 onChangeText={(value) => updateFormData("email", value)}
                 placeholder="Enter your email"
+                placeholderTextColor="rgba(255, 255, 255, 0.85)"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 leftIcon={
@@ -227,6 +230,7 @@ export default function SignupScreen() {
                 value={formData.password}
                 onChangeText={(value) => updateFormData("password", value)}
                 placeholder="Create a password"
+                placeholderTextColor="rgba(255, 255, 255, 0.85)"
                 secureTextEntry={!showPassword}
                 leftIcon={
                   <IconSymbol
@@ -254,6 +258,7 @@ export default function SignupScreen() {
                   updateFormData("confirmPassword", value)
                 }
                 placeholder="Confirm your password"
+                placeholderTextColor="rgba(255, 255, 255, 0.85)"
                 secureTextEntry={!showConfirmPassword}
                 leftIcon={
                   <IconSymbol
@@ -388,6 +393,8 @@ const styles = StyleSheet.create({
   },
   input: {
     color: realEstateColors.white,
+    fontSize: 15,
+    fontWeight: "500",
   },
   // Role selection styles
   inputContainer: {
@@ -403,10 +410,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-    borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.4)",
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     minHeight: 56,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -414,26 +421,29 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: 16,
     color: realEstateColors.white,
+    fontWeight: "500",
   },
   roleOptions: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     borderRadius: 12,
     marginTop: spacing.xs,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.3)",
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 255, 255, 0.4)",
+    overflow: "hidden",
   },
   roleOption: {
     padding: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.2)",
+    borderBottomColor: "rgba(255, 255, 255, 0.15)",
   },
   roleOptionText: {
     fontSize: 16,
-    color: realEstateColors.gray[300],
+    color: "rgba(255, 255, 255, 0.85)",
+    fontWeight: "500",
   },
   selectedRoleOptionText: {
     color: realEstateColors.white,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   termsContainer: {
     flexDirection: "row",

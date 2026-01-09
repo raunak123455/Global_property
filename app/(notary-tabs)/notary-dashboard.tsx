@@ -130,12 +130,14 @@ export default function NotaryDashboard() {
     IconComponent,
     iconName,
     color = realEstateColors.primary[600],
+    onPress,
   }: {
     title: string;
     value: number;
     IconComponent: any;
     iconName: string;
     color?: string;
+    onPress?: () => void;
   }) => {
     const [pressed, setPressed] = useState(false);
 
@@ -144,6 +146,7 @@ export default function NotaryDashboard() {
         style={styles.statCard}
         onPressIn={() => setPressed(true)}
         onPressOut={() => setPressed(false)}
+        onPress={onPress}
       >
         <View
           style={[
@@ -280,6 +283,9 @@ export default function NotaryDashboard() {
               IconComponent={Ionicons}
               iconName="document-text"
               color={realEstateColors.primary[600]}
+              onPress={() =>
+                router.push("/(notary-tabs)/document-verification")
+              }
             />
             <StatCard
               title="Pending Documents"

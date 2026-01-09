@@ -405,20 +405,40 @@ export default function MyProperties() {
         {/* Properties List */}
         {properties.length === 0 ? (
           <View style={styles.emptyState}>
-            <IconSymbol
-              name="building.2"
-              size={64}
-              color={realEstateColors.gray[400]}
-            />
+            <View style={styles.emptyIconCircle}>
+              <IconSymbol
+                name="building.2"
+                size={64}
+                color={realEstateColors.primary[600]}
+              />
+            </View>
             <Text style={styles.emptyTitle}>No Properties Yet</Text>
             <Text style={styles.emptySubtitle}>
               Start by adding your first property listing
             </Text>
-            <GradientButton
-              title="Add Your First Property"
-              onPress={() => router.push("/(seller-tabs)/add-property")}
+            <Pressable
               style={styles.emptyButton}
-            />
+              onPress={() => router.push("/(seller-tabs)/add-property")}
+            >
+              <LinearGradient
+                colors={[
+                  realEstateColors.primary[600],
+                  realEstateColors.primary[700],
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.emptyButtonGradient}
+              >
+                <IconSymbol
+                  name="plus.circle.fill"
+                  size={22}
+                  color={realEstateColors.white}
+                />
+                <Text style={styles.emptyButtonText}>
+                  Add Your First Property
+                </Text>
+              </LinearGradient>
+            </Pressable>
           </View>
         ) : (
           <View style={styles.propertiesList}>
@@ -581,21 +601,50 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     marginTop: spacing.xl * 2,
   },
+  emptyIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: realEstateColors.primary[50],
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.lg,
+  },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: 22,
+    fontWeight: "700",
     color: realEstateColors.gray[900],
-    marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   emptySubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: realEstateColors.gray[600],
     textAlign: "center",
     marginBottom: spacing.xl,
+    lineHeight: 22,
   },
   emptyButton: {
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: realEstateColors.primary[600],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  emptyButtonGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
+  },
+  emptyButtonText: {
+    color: realEstateColors.white,
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
   // Analytics Section Styles
   analyticsSection: {

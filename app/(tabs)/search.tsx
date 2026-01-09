@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Input } from "@/components/ui/Input";
@@ -20,21 +21,11 @@ import {
   borderRadius,
 } from "@/constants/RealEstateColors";
 import { useRouter } from "expo-router";
+import { useUser } from "@/contexts/UserContext";
+import { propertyAPI } from "@/utils/api";
+import { transformProperties, FrontendProperty } from "@/utils/propertyUtils";
 
-interface Property {
-  id: string;
-  title: string;
-  price: string;
-  location: string;
-  bedrooms: number;
-  bathrooms: number;
-  area: string;
-  image: string;
-  isFavorite: boolean;
-  type: string;
-}
-
-const mockSearchResults: Property[] = [
+const mockSearchResults: FrontendProperty[] = [
   {
     id: "1",
     title: "Modern Villa",
@@ -87,11 +78,16 @@ const mockSearchResults: Property[] = [
 
 export default function SearchScreen() {
   const router = useRouter();
+  const { user } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
-  const [properties, setProperties] = useState(mockSearchResults);
+  const [backendProperties, setBackendProperties] = useState<FrontendProperty[]>([]);
+  const [propertiesLoading, setPropertiesLoading] = useState(true);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  // Combine mock properties with backend properties
+  const allProperties = [...mockSearchResults, ...backendProperties];
 
   const filters = [
     { id: "house", label: "House", icon: "house" },
@@ -107,14 +103,99 @@ export default function SearchScreen() {
     { id: "over-800k", label: "Over $800K" },
   ];
 
-  const toggleFavorite = (propertyId: string) => {
-    setProperties((prev) =>
-      prev.map((property) =>
-        property.id === propertyId
-          ? { ...property, isFavorite: !property.isFavorite }
-          : property
-      )
+  // Fetch properties from backend (fetch once on mount)
+  useEffect(() => {
+    const fetchProperties = async () => {
+      if (!user?.token) {
+        setPropertiesLoading(false);
+        return;
+      }
+
+      try {
+        setPropertiesLoading(true);
+        const response = await propertyAPI.getAllProperties(user.token, {
+          limit: 200, // Fetch more properties for search
+        });
+
+        if (response && response.properties) {
+          const transformedProperties = transformProperties(
+            response.properties,
+            user._id
+          );
+          setBackendProperties(transformedProperties);
+        } else {
+          setBackendProperties([]);
+        }
+      } catch (error: any) {
+        console.error("Error fetching properties:", error);
+        setBackendProperties([]);
+      } finally {
+        setPropertiesLoading(false);
+      }
+    };
+
+    if (user?.token) {
+      fetchProperties();
+    }
+  }, [user?.token, user?._id]);
+
+  // Filter properties based on search query and selected filters (local filtering)
+  const getFilteredProperties = () => {
+    let filtered = [...allProperties];
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (property) =>
+          property.title.toLowerCase().includes(query) ||
+          property.location.toLowerCase().includes(query) ||
+          property.type.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply property type filters
+    const typeFilters = selectedFilters.filter((f) =>
+      ["house", "apartment", "villa", "condo"].includes(f)
     );
+    if (typeFilters.length > 0) {
+      filtered = filtered.filter((property) =>
+        typeFilters.some((f) => property.type.toLowerCase() === f)
+      );
+    }
+
+    // Apply price range filters
+    const priceFilters = selectedFilters.filter((f) =>
+      ["under-300k", "300k-500k", "500k-800k", "over-800k"].includes(f)
+    );
+    if (priceFilters.length > 0) {
+      filtered = filtered.filter((property) => {
+        const price = parseInt(property.price.replace(/[$,]/g, ""));
+        return priceFilters.some((filter) => {
+          switch (filter) {
+            case "under-300k":
+              return price < 300000;
+            case "300k-500k":
+              return price >= 300000 && price < 500000;
+            case "500k-800k":
+              return price >= 500000 && price < 800000;
+            case "over-800k":
+              return price >= 800000;
+            default:
+              return true;
+          }
+        });
+      });
+    }
+
+    return filtered;
+  };
+
+  const properties = getFilteredProperties();
+
+  const toggleFavorite = (propertyId: string) => {
+    // Note: In a real app, this would update the backend
+    // For now, we'll just show the visual feedback
   };
 
   const toggleFilter = (filterId: string) => {
@@ -125,7 +206,7 @@ export default function SearchScreen() {
     );
   };
 
-  const renderProperty = ({ item }: { item: Property }) => (
+  const renderProperty = ({ item }: { item: FrontendProperty }) => (
     <Pressable
       onPress={() => router.push(`/(tabs)/property-details?id=${item.id}`)}
     >
@@ -324,13 +405,46 @@ export default function SearchScreen() {
           </Pressable>
         </View>
 
-        <FlatList
-          data={properties}
-          renderItem={renderProperty}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.propertiesList}
-        />
+        {propertiesLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator
+              size="large"
+              color={realEstateColors.primary[600]}
+            />
+            <Text style={styles.loadingText}>Loading properties...</Text>
+          </View>
+        ) : properties.length > 0 ? (
+          <FlatList
+            data={properties}
+            renderItem={renderProperty}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.propertiesList}
+          />
+        ) : (
+          <View style={styles.emptyState}>
+            <IconSymbol
+              name="magnifyingglass"
+              size={64}
+              color={realEstateColors.gray[400]}
+            />
+            <Text style={styles.emptyStateTitle}>No properties found</Text>
+            <Text style={styles.emptyStateText}>
+              Try adjusting your search or filters to find more properties
+            </Text>
+            {(searchQuery || selectedFilters.length > 0) && (
+              <CustomButton
+                title="Clear Filters"
+                onPress={() => {
+                  setSearchQuery("");
+                  setSelectedFilters([]);
+                }}
+                variant="outline"
+                style={styles.clearFiltersButton}
+              />
+            )}
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -505,5 +619,42 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 12,
     color: realEstateColors.gray[600],
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: 14,
+    color: realEstateColors.gray[600],
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: realEstateColors.gray[900],
+    marginTop: spacing.lg,
+    textAlign: "center",
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: realEstateColors.gray[600],
+    marginTop: spacing.sm,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  clearFiltersButton: {
+    marginTop: spacing.lg,
+    minWidth: 150,
   },
 });

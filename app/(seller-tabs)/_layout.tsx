@@ -1,9 +1,13 @@
 import React from "react";
+import { Platform } from "react-native";
 import { Tabs } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/IconSymbol";
 import { realEstateColors } from "@/constants/RealEstateColors";
 
 export default function SellerTabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -14,13 +18,19 @@ export default function SellerTabLayout() {
           backgroundColor: realEstateColors.white,
           borderTopWidth: 1,
           borderTopColor: realEstateColors.gray[200],
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 88,
+          paddingBottom: Math.max(insets.bottom, 4),
+          paddingTop: 4,
+          height: 56 + Math.max(insets.bottom, 4),
+          elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
+          marginBottom: Platform.OS === "android" ? 4 : 0,
         },
       }}
     >
@@ -29,7 +39,7 @@ export default function SellerTabLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <IconSymbol name="house" size={size} color={color} />
+            <IconSymbol name="house.fill" size={size} color={color} />
           ),
         }}
       />
@@ -38,7 +48,7 @@ export default function SellerTabLayout() {
         options={{
           title: "My Properties",
           tabBarIcon: ({ color, size }) => (
-            <IconSymbol name="building.2" size={size} color={color} />
+            <IconSymbol name="folder.fill" size={size} color={color} />
           ),
         }}
       />
@@ -56,7 +66,7 @@ export default function SellerTabLayout() {
         options={{
           title: "Inquiries",
           tabBarIcon: ({ color, size }) => (
-            <IconSymbol name="message" size={size} color={color} />
+            <IconSymbol name="message.fill" size={size} color={color} />
           ),
         }}
       />
@@ -65,7 +75,7 @@ export default function SellerTabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <IconSymbol name="person" size={size} color={color} />
+            <IconSymbol name="person.fill" size={size} color={color} />
           ),
         }}
       />

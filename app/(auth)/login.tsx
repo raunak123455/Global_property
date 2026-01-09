@@ -117,6 +117,7 @@ export default function LoginScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Enter your email"
+                placeholderTextColor="rgba(255, 255, 255, 0.85)"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 leftIcon={
@@ -134,6 +135,7 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Enter your password"
+                placeholderTextColor="rgba(255, 255, 255, 0.85)"
                 secureTextEntry={!showPassword}
                 leftIcon={
                   <IconSymbol
@@ -258,33 +260,43 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginTop: spacing.xl,
-    marginBottom: spacing.lg, // Reduced margin
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "bold",
+    fontSize: 36,
+    fontWeight: "800",
     color: realEstateColors.white,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: realEstateColors.gray[300], // Lighter subtitle color
+    color: "rgba(255, 255, 255, 0.8)",
     textAlign: "center",
   },
   form: {
     flex: 1,
+    marginTop: spacing.md,
   },
   input: {
     color: realEstateColors.white,
+    fontSize: 15,
+    fontWeight: "500",
   },
   forgotPassword: {
     alignSelf: "flex-end",
-    marginBottom: spacing.md, // Reduced space before button
+    marginBottom: spacing.lg,
+    marginTop: -spacing.xs,
   },
   forgotPasswordText: {
     fontSize: 14,
     color: realEstateColors.white,
-    fontWeight: "500",
+    fontWeight: "600",
+    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   loginButton: {
     marginBottom: spacing.lg,
@@ -292,17 +304,18 @@ const styles = StyleSheet.create({
   divider: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: spacing.lg,
+    marginVertical: spacing.xl,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: realEstateColors.gray[600],
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
   },
   dividerText: {
     marginHorizontal: spacing.md,
     fontSize: 14,
-    color: realEstateColors.gray[300],
+    color: "rgba(255, 255, 255, 0.7)",
+    fontWeight: "500",
   },
   socialButtons: {
     flexDirection: "row",
@@ -314,14 +327,15 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: "center",
     paddingVertical: spacing.lg,
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
   },
   footerText: {
-    fontSize: 14,
-    color: realEstateColors.gray[300], // Lighter footer text
+    fontSize: 15,
+    color: "rgba(255, 255, 255, 0.8)",
   },
   footerLink: {
     color: realEstateColors.white,
-    fontWeight: "600",
+    fontWeight: "700",
+    textDecorationLine: "underline",
   },
 });
